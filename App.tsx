@@ -2,31 +2,55 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar, StyleSheet } from 'react-native';
-import HomeScreen from './src/screens/HomeScreen';
+import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
+import ModernHomeScreen from './src/screens/ModernHomeScreen';
 import { ZikrItem } from './src/types';
-import CounterScreen from './src/screens/CounterScreen';
+import ModernCounterScreen from './src/screens/ModernCounterScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
+import DashboardScreen from './src/screens/DashboardScreen';
+import LeaderboardScreen from './src/screens/LeaderboardScreen';
 
 export type RootStackParamList = {
   Home: undefined;
   Counter: { zikr: ZikrItem };
+  Settings: undefined;
+  Dashboard: undefined;
+  Leaderboard: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-const App: React.FC = () => {
+const AppNavigator: React.FC = () => {
+  const { theme, isDark } = useTheme();
+  
   return (
     <NavigationContainer>
-      <StatusBar barStyle="light-content" backgroundColor="#1a4d3a" />
+      <StatusBar 
+        barStyle={isDark ? "light-content" : "dark-content"} 
+        backgroundColor={theme.colors.background} 
+      />
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{
           headerShown: false,
+          cardStyle: { backgroundColor: theme.colors.background },
         }}
       >
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Counter" component={CounterScreen} />
+        <Stack.Screen name="Home" component={ModernHomeScreen} />
+        <Stack.Screen name="Counter" component={ModernCounterScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name="Dashboard" component={DashboardScreen} />
+        <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
       </Stack.Navigator>
     </NavigationContainer>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <AppNavigator />
+    </ThemeProvider>
   );
 };
 
