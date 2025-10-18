@@ -29,6 +29,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { RootStackParamList } from '../../../App';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
+import { StorageUtils } from '../../Utils/StorageUtils';
 
 type SettingsScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -85,12 +86,9 @@ const SettingsScreen: React.FC = () => {
 
   const loadSettings = async () => {
     try {
-      const savedSettings = await AsyncStorage.getItem('app_settings');
-      if (savedSettings) {
-        const parsedSettings = JSON.parse(savedSettings);
-        setSettings(parsedSettings);
-        setCustomRoundCount(parsedSettings.defaultRoundCount.toString());
-      }
+      const savedSettings = await StorageUtils.getSettings();
+      setSettings(savedSettings);
+      setCustomRoundCount(savedSettings.defaultRoundCount.toString());
     } catch (error) {
       console.error('Error loading settings:', error);
     }
@@ -98,7 +96,7 @@ const SettingsScreen: React.FC = () => {
 
   const saveSettings = async (newSettings: SettingsData) => {
     try {
-      await AsyncStorage.setItem('app_settings', JSON.stringify(newSettings));
+      await StorageUtils.saveSettings(newSettings);
       setSettings(newSettings);
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -119,7 +117,7 @@ const SettingsScreen: React.FC = () => {
   const handleResetAllData = () => {
     Alert.alert(
       'Reset All Data',
-      'This will delete all your counters and custom dhikrs. This action cannot be undone.',
+      'This will delete all your counters, custom dhikrs, and settings. This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -127,7 +125,16 @@ const SettingsScreen: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await AsyncStorage.clear();
+              await StorageUtils.clearAllData();
+              // Reset to default settings
+              const defaultSettings = {
+                soundEnabled: true,
+                vibrationEnabled: true,
+                defaultRoundCount: 100,
+                autoReset: false,
+              };
+              setSettings(defaultSettings);
+              setCustomRoundCount('100');
               Alert.alert('Success', 'All data has been reset.');
             } catch (error) {
               Alert.alert('Error', 'Failed to reset data.');

@@ -13,7 +13,7 @@ import {
   Animated,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import {
   House,
@@ -34,6 +34,7 @@ import { RootStackParamList } from '../../../App';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { FONT_WEIGHTS, TYPOGRAPHY } from '../../constants/Fonts';
+import { StorageUtils } from '../../Utils/StorageUtils';
 
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
@@ -55,6 +56,9 @@ const ModernHomeScreen: React.FC = () => {
   const { theme } = useTheme();
   const [customZikrs, setCustomZikrs] = useState<ZikrItem[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingZikr, setEditingZikr] = useState<ZikrItem | null>(null);
+  const [loading, setLoading] = useState(true);
   const [fabAnimation] = useState(new Animated.Value(1));
   const [newZikr, setNewZikr] = useState({
     arabic: '',
@@ -64,11 +68,35 @@ const ModernHomeScreen: React.FC = () => {
     recommendedCount: 33,
   });
 
+  // Load custom zikrs on component mount and when screen comes into focus
+  React.useEffect(() => {
+    loadCustomZikrs();
+  }, []);
+
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      loadCustomZikrs();
+    }, [])
+  );
+
+  const loadCustomZikrs = async () => {
+    try {
+      setLoading(true);
+      const savedZikrs = await StorageUtils.getCustomZikrs();
+      setCustomZikrs(savedZikrs);
+    } catch (error) {
+      console.error('Error loading custom zikrs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleZikrPress = (zikr: ZikrItem) => {
     navigation.navigate('Counter', { zikr });
   };
 
-  const addCustomZikr = () => {
+  const addCustomZikr = async () => {
     if (!newZikr.arabic || !newZikr.translation) {
       Alert.alert('Error', 'Please enter Arabic text and translation');
       return;
@@ -79,15 +107,86 @@ const ModernHomeScreen: React.FC = () => {
       ...newZikr,
     };
 
-    setCustomZikrs([...customZikrs, customZikr]);
+    try {
+      await StorageUtils.saveCustomZikr(customZikr);
+      setCustomZikrs([...customZikrs, customZikr]);
+      setNewZikr({
+        arabic: '',
+        transliteration: '',
+        translation: '',
+        reference: '',
+        recommendedCount: 33,
+      });
+      setModalVisible(false);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save custom dhikr');
+    }
+  };
+
+  const editCustomZikr = (zikr: ZikrItem) => {
+    setEditingZikr(zikr);
     setNewZikr({
-      arabic: '',
-      transliteration: '',
-      translation: '',
-      reference: '',
-      recommendedCount: 33,
+      arabic: zikr.arabic,
+      transliteration: zikr.transliteration,
+      translation: zikr.translation,
+      reference: zikr.reference,
+      recommendedCount: zikr.recommendedCount,
     });
-    setModalVisible(false);
+    setEditModalVisible(true);
+  };
+
+  const updateCustomZikr = async () => {
+    if (!newZikr.arabic || !newZikr.translation || !editingZikr) {
+      Alert.alert('Error', 'Please enter Arabic text and translation');
+      return;
+    }
+
+    const updatedZikr: ZikrItem = {
+      ...editingZikr,
+      ...newZikr,
+    };
+
+    try {
+      await StorageUtils.updateCustomZikr(editingZikr.id, updatedZikr);
+      setCustomZikrs(customZikrs.map(zikr => 
+        zikr.id === editingZikr.id ? updatedZikr : zikr
+      ));
+      setNewZikr({
+        arabic: '',
+        transliteration: '',
+        translation: '',
+        reference: '',
+        recommendedCount: 33,
+      });
+      setEditingZikr(null);
+      setEditModalVisible(false);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update custom dhikr');
+    }
+  };
+
+  const deleteCustomZikr = (zikrId: number) => {
+    Alert.alert(
+      'Delete Dhikr',
+      'Are you sure you want to delete this custom dhikr?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await StorageUtils.deleteCustomZikr(zikrId);
+              setCustomZikrs(customZikrs.filter(zikr => zikr.id !== zikrId));
+              // Show success message
+              Alert.alert('Success', 'Custom dhikr deleted successfully!');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete custom dhikr');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const ZikrCard: React.FC<{ zikr: ZikrItem; isCustom?: boolean }> = ({
@@ -116,16 +215,34 @@ const ModernHomeScreen: React.FC = () => {
             </Text>
             <IslamicStarIcon size={16} color={theme.colors.accent} />
           </View>
-          <View
-            style={[
-              styles.countBadge,
-              { backgroundColor: `${theme.colors.accent}20` },
-            ]}
-          >
-            <CrescentIcon size={14} color={theme.colors.accent} />
-            <Text style={[styles.countText, { color: theme.colors.accent }]}>
-              {zikr.recommendedCount}
-            </Text>
+          <View style={styles.cardActions}>
+            <View
+              style={[
+                styles.countBadge,
+                { backgroundColor: `${theme.colors.accent}20` },
+              ]}
+            >
+              <CrescentIcon size={14} color={theme.colors.accent} />
+              <Text style={[styles.countText, { color: theme.colors.accent }]}>
+                {zikr.recommendedCount}
+              </Text>
+            </View>
+            {isCustom && (
+              <View style={styles.customActions}>
+                <TouchableOpacity
+                  onPress={() => editCustomZikr(zikr)}
+                  style={styles.actionButton}
+                >
+                  <Gear size={16} color={theme.colors.primary} weight="bold" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => deleteCustomZikr(zikr.id)}
+                  style={styles.actionButton}
+                >
+                  <X size={16} color={theme.colors.error} weight="bold" />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
 
@@ -237,7 +354,31 @@ const ModernHomeScreen: React.FC = () => {
         </View>
 
         {/* Custom Dhikr Section */}
-        {customZikrs.length > 0 && (
+        {loading ? (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <CrescentIcon color={theme.colors.primary} />
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                Personal Collection
+              </Text>
+              <View
+                style={[
+                  styles.sectionDivider,
+                  { backgroundColor: theme.colors.accent },
+                ]}
+              />
+            </View>
+            <Card
+              variant="outlined"
+              padding="medium"
+              style={[styles.loadingCard, { backgroundColor: theme.colors.surface }]}
+            >
+              <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+                Loading your personal dhikrs...
+              </Text>
+            </Card>
+          </View>
+        ) : customZikrs.length > 0 ? (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <CrescentIcon color={theme.colors.primary} />
@@ -256,7 +397,7 @@ const ModernHomeScreen: React.FC = () => {
               <ZikrCard key={zikr.id} zikr={zikr} isCustom={true} />
             ))}
           </View>
-        )}
+        ) : null}
 
         <View style={styles.bottomPadding} />
       </ScrollView>
@@ -462,6 +603,189 @@ const ModernHomeScreen: React.FC = () => {
               <Button
                 title="Add Dhikr"
                 onPress={addCustomZikr}
+                variant="primary"
+                icon={
+                  <CheckCircle
+                    size={16}
+                    color={theme.colors.surface}
+                    weight="bold"
+                  />
+                }
+                style={styles.modalButton}
+              />
+            </View>
+          </Card>
+        </View>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        visible={editModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View
+          style={[
+            styles.modalOverlay,
+            { backgroundColor: theme.colors.overlay },
+          ]}
+        >
+          <Card
+            variant="elevated"
+            padding="large"
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.colors.surface },
+            ]}
+          >
+            <LinearGradient
+              colors={[theme.colors.primary, theme.colors.secondary]}
+              style={styles.modalHeader}
+            >
+              <View style={styles.modalHeaderLeft}>
+                <Gear
+                  size={24}
+                  color={theme.colors.surface}
+                  weight="fill"
+                />
+                <Text
+                  style={[styles.modalTitle, { color: theme.colors.surface }]}
+                >
+                  Edit Dhikr
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setEditModalVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <X size={24} color={theme.colors.surface} weight="bold" />
+              </TouchableOpacity>
+            </LinearGradient>
+
+            <ScrollView style={styles.modalScrollView}>
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: theme.colors.text }]}>
+                  Arabic Text *
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: theme.colors.border,
+                      backgroundColor: theme.colors.background,
+                      color: theme.colors.text,
+                    },
+                  ]}
+                  placeholder=""
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={newZikr.arabic}
+                  onChangeText={text =>
+                    setNewZikr({ ...newZikr, arabic: text })
+                  }
+                  multiline
+                  textAlign="right"
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: theme.colors.text }]}>
+                  Transliteration
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: theme.colors.border,
+                      backgroundColor: theme.colors.background,
+                      color: theme.colors.text,
+                    },
+                  ]}
+                  placeholder="English pronunciation"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={newZikr.transliteration}
+                  onChangeText={text =>
+                    setNewZikr({ ...newZikr, transliteration: text })
+                  }
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: theme.colors.text }]}>
+                  Translation *
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: theme.colors.border,
+                      backgroundColor: theme.colors.background,
+                      color: theme.colors.text,
+                    },
+                  ]}
+                  placeholder="English meaning"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={newZikr.translation}
+                  onChangeText={text =>
+                    setNewZikr({ ...newZikr, translation: text })
+                  }
+                  multiline
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: theme.colors.text }]}>
+                  Reference
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: theme.colors.border,
+                      backgroundColor: theme.colors.background,
+                      color: theme.colors.text,
+                    },
+                  ]}
+                  placeholder="Quran/Hadith reference (optional)"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={newZikr.reference}
+                  onChangeText={text =>
+                    setNewZikr({ ...newZikr, reference: text })
+                  }
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: theme.colors.text }]}>
+                  Recommended Count
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: theme.colors.border,
+                      backgroundColor: theme.colors.background,
+                      color: theme.colors.text,
+                    },
+                  ]}
+                  placeholder="33"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={newZikr.recommendedCount.toString()}
+                  onChangeText={text =>
+                    setNewZikr({
+                      ...newZikr,
+                      recommendedCount: parseInt(text) || 33,
+                    })
+                  }
+                  keyboardType="numeric"
+                />
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalButtons}>
+              <Button
+                title="Update Dhikr"
+                onPress={updateCustomZikr}
                 variant="primary"
                 icon={
                   <CheckCircle
@@ -714,6 +1038,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 12,
     padding: 12,
+    width: "100%",
   },
   modalButtons: {
     flexDirection: 'row',
@@ -723,6 +1048,32 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  customActions: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  actionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingCard: {
+    borderRadius: 12,
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    fontSize: 14,
+    fontStyle: 'italic',
   },
 });
 

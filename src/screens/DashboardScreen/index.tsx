@@ -9,7 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { 
   ArrowLeft, 
@@ -29,6 +29,7 @@ import { CounterData } from '../../types';
 import Card from '../../components/ui/Card';
 import CircularProgress from '../../components/ui/CircularProgress';
 import Button from '../../components/ui/Button';
+import { StorageUtils } from '../../Utils/StorageUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -83,32 +84,47 @@ const DashboardScreen: React.FC = () => {
     loadDashboardData();
   }, []);
 
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      loadDashboardData();
+    }, [])
+  );
+
   const loadDashboardData = async () => {
     try {
-      // Load counter data from AsyncStorage
-      const counterData = await AsyncStorage.getItem('tasbih_counter_data');
-      const counters: CounterData[] = counterData ? JSON.parse(counterData) : [];
-
-      // Calculate total counts and rounds
-      const totalCount = counters.reduce((sum, counter) => sum + counter.count, 0);
-      const totalRounds = counters.reduce((sum, counter) => sum + Math.floor(counter.count / 100), 0);
-
-      // Mock daily progress (in real app, this would be calculated from daily data)
-      const dailyProgress = Math.min(totalCount % 1000, 1000);
-
-      // Mock weekly and monthly counts
-      const weeklyCount = Math.floor(totalCount * 0.3);
-      const monthlyCount = Math.floor(totalCount * 0.1);
+      // Check and perform daily reset if needed
+      await StorageUtils.checkDailyReset();
+      
+      // Update streak first
+      await StorageUtils.updateStreak();
+      
+      // Get comprehensive dashboard stats from StorageUtils
+      const dashboardStats = await StorageUtils.calculateDashboardStats();
+      
+      // Get most recited zikr name
+      let favoriteZikr = 'سُبْحَانَ اللهِ';
+      if (dashboardStats.mostRecitedZikrId > 0) {
+        try {
+          const customZikrs = await StorageUtils.getCustomZikrs();
+          const customZikr = customZikrs.find(z => z.id === dashboardStats.mostRecitedZikrId);
+          if (customZikr) {
+            favoriteZikr = customZikr.arabic;
+          }
+        } catch (error) {
+          console.error('Error getting most recited zikr:', error);
+        }
+      }
 
       setStats({
-        totalCount,
-        totalRounds,
+        totalCount: dashboardStats.totalCount,
+        totalRounds: dashboardStats.totalRounds,
         dailyGoal: 1000,
-        dailyProgress,
-        weeklyCount,
-        monthlyCount,
-        streak: Math.floor(totalCount / 500), // Mock streak calculation
-        favoriteZikr: 'سُبْحَانَ اللهِ',
+        dailyProgress: dashboardStats.dailyProgress,
+        weeklyCount: dashboardStats.weeklyCount,
+        monthlyCount: dashboardStats.monthlyCount,
+        streak: dashboardStats.streak,
+        favoriteZikr,
       });
     } catch (error) {
       console.error('Error loading dashboard data:', error);

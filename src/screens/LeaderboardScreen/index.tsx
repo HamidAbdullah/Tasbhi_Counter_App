@@ -11,7 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { 
   ArrowLeft, 
@@ -26,6 +26,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { RootStackParamList } from '../../../App';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import { StorageUtils } from '../../Utils/StorageUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -76,10 +77,22 @@ const LeaderboardScreen: React.FC = () => {
     loadLeaderboard();
   }, [leaderboardType]);
 
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      loadLeaderboard();
+    }, [leaderboardType])
+  );
+
   const loadLeaderboard = async () => {
     setLoading(true);
     try {
-      // Mock data - in real app, this would come from Firebase
+      // Get user's actual data from Async Storage
+      const userStats = await StorageUtils.calculateDashboardStats();
+      const today = new Date().toISOString().split('T')[0];
+      const todayStats = await StorageUtils.getDailyStats(today) || { totalCount: 0 };
+      
+      // Mock data for other users - in real app, this would come from Firebase
       const mockData: LeaderboardEntry[] = [
         {
           userId: '1',
@@ -112,17 +125,6 @@ const LeaderboardScreen: React.FC = () => {
           lastUpdated: new Date(),
         },
         {
-          userId: 'current',
-          displayName: 'You',
-          dailyCount: 1800,
-          weeklyCount: 11000,
-          monthlyCount: 45000,
-          totalCount: 180000,
-          rank: 5,
-          lastUpdated: new Date(),
-          isCurrentUser: true,
-        },
-        {
           userId: '4',
           displayName: 'Aisha Rahman',
           dailyCount: 1900,
@@ -139,8 +141,20 @@ const LeaderboardScreen: React.FC = () => {
           weeklyCount: 10000,
           monthlyCount: 42000,
           totalCount: 170000,
-          rank: 6,
+          rank: 5,
           lastUpdated: new Date(),
+        },
+        // Add current user with real data
+        {
+          userId: 'current',
+          displayName: 'You',
+          dailyCount: todayStats.totalCount,
+          weeklyCount: userStats.weeklyCount,
+          monthlyCount: userStats.monthlyCount,
+          totalCount: userStats.totalCount,
+          rank: 0, // Will be calculated after sorting
+          lastUpdated: new Date(),
+          isCurrentUser: true,
         },
       ];
 
@@ -506,7 +520,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   lastUpdated: {
-    fontSize: 12,
+    fontSize: 10,
     marginLeft: 4,
   },
   scoreSection: {

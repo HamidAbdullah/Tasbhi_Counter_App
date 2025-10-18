@@ -24,6 +24,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import ModernTapTasbih from '../../components/ModernTapTasbih';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
+import { StorageUtils } from '../../Utils/StorageUtils';
 
 type CounterScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -48,6 +49,34 @@ const ModernCounterScreen: React.FC = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [pulseAnimation] = useState(new Animated.Value(1));
   const [hasShownLearnMore, setHasShownLearnMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load existing count on component mount
+  React.useEffect(() => {
+    loadExistingCount();
+  }, []);
+
+  const loadExistingCount = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Add timeout to prevent long loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Loading timeout')), 2000)
+      );
+      
+      const dataPromise = StorageUtils.getCounterData(zikr.id);
+      const existingCount = await Promise.race([dataPromise, timeoutPromise]) as number;
+      
+      setCount(existingCount);
+    } catch (error) {
+      console.error('Error loading existing count:', error);
+      // If there's an error or timeout, just start with 0 and make it clickable
+      setCount(0);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -196,6 +225,16 @@ const ModernCounterScreen: React.FC = () => {
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 3,
     },
+    loadingContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 200,
+    },
+    loadingText: {
+      ...theme.typography.bodyLarge,
+      textAlign: 'center',
+      opacity: 0.8,
+    },
   });
 
   // Subtle pulse animation for tap hint
@@ -292,9 +331,32 @@ const ModernCounterScreen: React.FC = () => {
     hasShownLearnMore,
   ]);
 
-  const handleIncrement = () => {
-    setCount((prev: number) => prev + 1);
+  const handleIncrement = async () => {
+    // Allow increment even while loading to ensure responsiveness
+    const newCount = count + 1;
+    setCount(newCount);
     HapticFeedback.trigger('impactLight');
+    
+    // Save to Async Storage (non-blocking)
+    StorageUtils.saveCounterData(zikr.id, newCount).catch(error => {
+      console.error('Error saving counter data:', error);
+    });
+    
+    // Update daily stats (non-blocking)
+    const today = new Date().toISOString().split('T')[0];
+    StorageUtils.getDailyStats(today).then(todayStats => {
+      const stats = todayStats || { totalCount: 0, totalRounds: 0 };
+      stats.totalCount += 1;
+      stats.totalRounds = Math.floor(stats.totalCount / zikr.recommendedCount);
+      return StorageUtils.saveDailyStats(today, stats);
+    }).catch(error => {
+      console.error('Error updating daily stats:', error);
+    });
+    
+    // Update streak (non-blocking)
+    StorageUtils.updateStreak().catch(error => {
+      console.error('Error updating streak:', error);
+    });
   };
 
   const handleReset = () => {
@@ -303,10 +365,17 @@ const ModernCounterScreen: React.FC = () => {
       {
         text: 'Reset',
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
           setCount(0);
           setIsCompleted(false);
           HapticFeedback.trigger('impactMedium');
+          
+          // Reset in Async Storage
+          try {
+            await StorageUtils.resetCounter(zikr.id);
+          } catch (error) {
+            console.error('Error resetting counter:', error);
+          }
         },
       },
     ]);
@@ -474,35 +543,45 @@ const ModernCounterScreen: React.FC = () => {
 
         {/* Tasbih Counter */}
         <View style={styles.tasbihContainer}>
-          <ModernTapTasbih
-            count={currentRoundCount}
-            onIncrement={handleIncrement}
-            isCompleted={currentRoundCount === zikr.recommendedCount}
-            targetCount={zikr.recommendedCount}
-          />
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <Text style={[styles.loadingText, { color: theme.colors.surface }]}>
+                Loading your progress...
+              </Text>
+            </View>
+          ) : (
+            <>
+              <ModernTapTasbih
+                count={currentRoundCount}
+                onIncrement={handleIncrement}
+                isCompleted={currentRoundCount === zikr.recommendedCount}
+                targetCount={zikr.recommendedCount}
+              />
 
-          {/* Tap Here Hint - Show only when count is 0 */}
-          {count === 0 && (
-            <Animated.View
-              style={[
-                styles.tapHintContainer,
-                {
-                  opacity: pulseAnimation,
-                  transform: [{ scale: pulseAnimation }],
-                },
-              ]}
-            >
-              <Text
-                style={[styles.tapHintText, { color: theme.colors.surface }]}
-              >
-                👆 Tap Here to Start
-              </Text>
-              <Text
-                style={[styles.tapHintSubText, { color: theme.colors.surface }]}
-              >
-                Begin your Dhikr journey
-              </Text>
-            </Animated.View>
+              {/* Tap Here Hint - Show only when count is 0 */}
+              {count === 0 && (
+                <Animated.View
+                  style={[
+                    styles.tapHintContainer,
+                    {
+                      opacity: pulseAnimation,
+                      transform: [{ scale: pulseAnimation }],
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[styles.tapHintText, { color: theme.colors.surface }]}
+                  >
+                    👆 Tap Here to Start
+                  </Text>
+                  <Text
+                    style={[styles.tapHintSubText, { color: theme.colors.surface }]}
+                  >
+                    Begin your Dhikr journey
+                  </Text>
+                </Animated.View>
+              )}
+            </>
           )}
         </View>
       </LinearGradient>
