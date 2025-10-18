@@ -26,6 +26,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const bismillahAnim = useRef(new Animated.Value(0)).current;
   
   // Floating elements animations
   const star1Anim = useRef(new Animated.Value(0)).current;
@@ -87,6 +88,14 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
         }),
       ])
     ).start();
+
+    // Bismillah writing animation
+    Animated.timing(bismillahAnim, {
+      toValue: 1,
+      duration: 2000,
+      delay: 1000,
+      useNativeDriver: false,
+    }).start();
 
     // Floating elements animations
     startFloatingAnimations();
@@ -287,6 +296,11 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
     outputRange: [0, -14],
   });
 
+  const bismillahWidth = bismillahAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
   return (
     <View style={styles.container}>
       <StatusBar hidden />
@@ -464,6 +478,26 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
           Digital Tasbih
         </Animated.Text>
 
+        {/* Bismillah with writing animation */}
+        <Animated.View
+          style={[
+            styles.bismillahContainer,
+            { opacity: fadeAnim },
+          ]}
+        >
+          <Animated.View
+            style={[
+              styles.bismillahText,
+              {
+                color: theme.colors.surface,
+                transform: [{ scaleX: bismillahWidth }],
+              },
+            ]}
+          >
+            بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+          </Animated.View>
+        </Animated.View>
+
         {/* Subtitle */}
         <Animated.Text
           style={[
@@ -624,6 +658,21 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
+  },
+  bismillahContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  bismillahText: {
+    fontSize: 26,
+    fontFamily: 'Amiri-Bold',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    transformOrigin: 'left',
+    lineHeight: 36,
+    writingDirection: 'rtl',
   },
   appSubtitle: {
     fontSize: 20,
