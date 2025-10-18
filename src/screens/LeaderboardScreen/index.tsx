@@ -421,14 +421,14 @@ const styles = StyleSheet.create({
   },
   typeButton: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 15,
     paddingHorizontal: 16,
     borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
   },
   typeButtonText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   userRankCard: {
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingBottom: '20%',
   },
   leaderboardItem: {
     marginBottom: 12,

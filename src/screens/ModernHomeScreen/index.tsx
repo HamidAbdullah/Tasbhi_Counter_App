@@ -503,6 +503,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
+    paddingTop: 30,
   },
   headerText: {
     flex: 1,
@@ -510,6 +511,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     marginBottom: 4,
+    fontSize: 30,
   },
   headerSubtitle: {},
   headerBorder: {
