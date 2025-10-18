@@ -33,10 +33,15 @@ import { AZKAAR } from '../../constants/AzkarData';
 import { RootStackParamList } from '../../../App';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
-import { FONT_WEIGHTS, TYPOGRAPHY } from '../../constants/Fonts';
 
+const { width } = Dimensions.get('window');
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
+
+// Modern Islamic-themed Icons using Phosphor
+const MosqueIcon = ({ size = 32, color = '#ffffff' }) => (
+  <House size={size} color={color} weight="fill" />
+);
 
 const IslamicStarIcon = ({ size = 20, color = '#DAA520' }) => (
   <Star size={size} color={color} weight="fill" />
@@ -546,7 +551,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   sectionTitle: {
-    ...TYPOGRAPHY.h3,
+    fontSize: 20,
+    fontWeight: '700',
     marginLeft: 10,
     flex: 1,
   },
@@ -586,8 +592,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   cardCategory: {
-    ...TYPOGRAPHY.caption,
-    fontFamily: FONT_WEIGHTS.semiBold.primary,
+    fontSize: 12,
+    fontWeight: '600',
     marginRight: 6,
   },
   countBadge: {
@@ -598,33 +604,33 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   countText: {
-    ...TYPOGRAPHY.caption,
-    fontFamily: FONT_WEIGHTS.bold.primary,
+    fontSize: 12,
+    fontWeight: '700',
     marginLeft: 4,
   },
   cardContent: {
     alignItems: 'center',
   },
   arabicText: {
-    ...TYPOGRAPHY.arabicLarge,
     fontSize: 22,
+    fontWeight: '600',
     textAlign: 'center',
     marginBottom: 8,
-    lineHeight: 52,
+    lineHeight: 32,
   },
   transliterationText: {
-    ...TYPOGRAPHY.bodySmall,
+    fontSize: 14,
     textAlign: 'center',
     marginBottom: 6,
     fontStyle: 'italic',
   },
   translationText: {
-    ...TYPOGRAPHY.bodySmall,
+    fontSize: 14,
     textAlign: 'center',
     marginBottom: 8,
+    lineHeight: 20,
   },
   referenceText: {
-    ...TYPOGRAPHY.caption,
     fontSize: 11,
     textAlign: 'center',
     fontStyle: 'italic',
@@ -650,78 +656,3 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  bottomPadding: {
-    height: 100,
-  },
-
-  // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  modalContent: {
-    borderRadius: 20,
-    maxHeight: '85%',
-    elevation: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    width: '100%',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    marginBottom: 20,
-  },
-  modalHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  modalTitle: {
-    ...TYPOGRAPHY.h3,
-    marginLeft: 12,
-  },
-  modalCloseButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalScrollView: {
-    maxHeight: 400,
-    paddingHorizontal: 20,
-  },
-  inputContainer: {
-    marginVertical: 8,
-  },
-  inputLabel: {
-    ...TYPOGRAPHY.label,
-    marginBottom: 6,
-  },
-  input: {
-    ...TYPOGRAPHY.body,
-    borderWidth: 2,
-    borderRadius: 12,
-    padding: 12,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-  },
-});
-
-export default ModernHomeScreen;

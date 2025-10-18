@@ -10,8 +10,18 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import { 
+  ArrowLeft, 
+  ChartBar, 
+  Trophy, 
+  Calendar, 
+  Target, 
+  Star,
+  House,
+  Gear,
+  Users
+} from 'phosphor-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../contexts/ThemeContext';
 import { RootStackParamList } from '../../../App';
@@ -25,49 +35,23 @@ const { width } = Dimensions.get('window');
 type DashboardScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Dashboard'>;
 
 const BackIcon = ({ size = 24, color = '#ffffff' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M19 12H5M12 19l-7-7 7-7"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
+  <ArrowLeft size={size} color={color} weight="bold" />
 );
 
 const StatsIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke={color} strokeWidth={2}/>
-    <Path d="M9 9h6v6H9z" fill={color}/>
-    <Path d="M21 15h-6v6h6v-6z" fill={color}/>
-    <Path d="M21 3h-6v6h6V3z" fill={color}/>
-  </Svg>
+  <ChartBar size={size} color={color} weight="bold" />
 );
 
 const TrophyIcon = ({ size = 24, color = '#DAA520' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M6 9v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M6 9h12" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Circle cx="12" cy="15" r="3" stroke={color} strokeWidth={2}/>
-  </Svg>
+  <Trophy size={size} color={color} weight="fill" />
 );
 
 const CalendarIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke={color} strokeWidth={2}/>
-    <Path d="M16 2v4M8 2v4M3 10h18" stroke={color} strokeWidth={2} strokeLinecap="round"/>
-  </Svg>
+  <Calendar size={size} color={color} weight="bold" />
 );
 
 const TargetIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth={2}/>
-    <Circle cx="12" cy="12" r="6" stroke={color} strokeWidth={2}/>
-    <Circle cx="12" cy="12" r="2" stroke={color} strokeWidth={2}/>
-  </Svg>
+  <Target size={size} color={color} weight="bold" />
 );
 
 interface DashboardStats {
@@ -330,6 +314,7 @@ const DashboardScreen: React.FC = () => {
               variant="primary"
               size="large"
               fullWidth
+              icon={<House size={20} color={theme.colors.surface} weight="bold" />}
               style={styles.actionButton}
             />
             
@@ -340,6 +325,7 @@ const DashboardScreen: React.FC = () => {
                 variant="secondary"
                 size="large"
                 fullWidth
+                icon={<Users size={20} color={theme.colors.surface} weight="bold" />}
                 style={styles.actionButton}
               />
               
@@ -349,6 +335,7 @@ const DashboardScreen: React.FC = () => {
                 variant="outline"
                 size="large"
                 fullWidth
+                icon={<Gear size={20} color={theme.colors.primary} weight="bold" />}
                 style={styles.actionButton}
               />
             </View>

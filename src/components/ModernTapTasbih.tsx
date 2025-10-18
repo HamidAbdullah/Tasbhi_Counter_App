@@ -296,15 +296,10 @@ const ModernTapTasbih: React.FC<ModernTapTasbihProps> = ({
           >
             {/* Button Content */}
             <View style={styles.buttonContent}>
-              {/* Arabic "Allah" */}
-              <Text style={[styles.allahText, { color: theme.colors.surface }]}>
-                اللّٰہ
-              </Text>
-
               {/* Tap Instruction */}
-              <Text style={[styles.tapText, { color: theme.colors.surface }]}>
+              {/* <Text style={[styles.tapText, { color: theme.colors.surface }]}>
                 ٹیپ کریں
-              </Text>
+              </Text> */}
 
               {/* Circular Progress */}
               <CircularProgress

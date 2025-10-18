@@ -36,32 +36,72 @@ export interface Theme {
   typography: {
     h1: {
       fontSize: number;
-      fontWeight: string;
+      fontFamily: string;
       lineHeight: number;
     };
     h2: {
       fontSize: number;
-      fontWeight: string;
+      fontFamily: string;
       lineHeight: number;
     };
     h3: {
       fontSize: number;
-      fontWeight: string;
+      fontFamily: string;
       lineHeight: number;
     };
     body: {
       fontSize: number;
-      fontWeight: string;
+      fontFamily: string;
       lineHeight: number;
     };
-    caption: {
+    bodyLarge: {
       fontSize: number;
-      fontWeight: string;
+      fontFamily: string;
+      lineHeight: number;
+    };
+    bodySmall: {
+      fontSize: number;
+      fontFamily: string;
       lineHeight: number;
     };
     button: {
       fontSize: number;
-      fontWeight: string;
+      fontFamily: string;
+      lineHeight: number;
+    };
+    buttonLarge: {
+      fontSize: number;
+      fontFamily: string;
+      lineHeight: number;
+    };
+    buttonSmall: {
+      fontSize: number;
+      fontFamily: string;
+      lineHeight: number;
+    };
+    caption: {
+      fontSize: number;
+      fontFamily: string;
+      lineHeight: number;
+    };
+    label: {
+      fontSize: number;
+      fontFamily: string;
+      lineHeight: number;
+    };
+    arabic: {
+      fontSize: number;
+      fontFamily: string;
+      lineHeight: number;
+    };
+    arabicLarge: {
+      fontSize: number;
+      fontFamily: string;
+      lineHeight: number;
+    };
+    arabicSmall: {
+      fontSize: number;
+      fontFamily: string;
       lineHeight: number;
     };
   };
@@ -101,23 +141,23 @@ export interface Theme {
 
 export const lightTheme: Theme = {
   colors: {
-    primary: '#1e7e34',
-    secondary: '#2d5a27',
-    tertiary: '#4a7c59',
-    background: '#f8f9fa',
+    primary: '#2d5a27',
+    secondary: '#4a7c59',
+    tertiary: '#6ba16e',
+    background: '#f8fafc',
     surface: '#ffffff',
     card: '#ffffff',
-    text: '#1a1a1a',
-    textSecondary: '#666666',
-    textTertiary: '#999999',
-    border: '#e0e0e0',
-    error: '#d73527',
-    warning: '#f39c12',
-    success: '#27ae60',
-    info: '#3498db',
-    accent: '#DAA520',
+    text: '#1a202c',
+    textSecondary: '#4a5568',
+    textTertiary: '#718096',
+    border: '#e2e8f0',
+    error: '#e53e3e',
+    warning: '#ed8936',
+    success: '#38a169',
+    info: '#3182ce',
+    accent: '#d69e2e',
     shadow: '#000000',
-    overlay: 'rgba(0, 0, 0, 0.5)',
+    overlay: 'rgba(0, 0, 0, 0.4)',
   },
   spacing: {
     xs: 4,
@@ -137,33 +177,73 @@ export const lightTheme: Theme = {
   typography: {
     h1: {
       fontSize: 32,
-      fontWeight: '700',
+      fontFamily: 'Poppins-Bold',
       lineHeight: 40,
     },
     h2: {
       fontSize: 24,
-      fontWeight: '600',
+      fontFamily: 'Poppins-Bold',
       lineHeight: 32,
     },
     h3: {
       fontSize: 20,
-      fontWeight: '600',
+      fontFamily: 'Poppins-SemiBold',
       lineHeight: 28,
     },
     body: {
       fontSize: 16,
-      fontWeight: '400',
+      fontFamily: 'Poppins-Regular',
       lineHeight: 24,
     },
-    caption: {
-      fontSize: 12,
-      fontWeight: '400',
-      lineHeight: 16,
+    bodyLarge: {
+      fontSize: 18,
+      fontFamily: 'Poppins-Regular',
+      lineHeight: 28,
+    },
+    bodySmall: {
+      fontSize: 14,
+      fontFamily: 'Poppins-Regular',
+      lineHeight: 20,
     },
     button: {
       fontSize: 16,
-      fontWeight: '600',
+      fontFamily: 'Poppins-SemiBold',
       lineHeight: 24,
+    },
+    buttonLarge: {
+      fontSize: 18,
+      fontFamily: 'Poppins-SemiBold',
+      lineHeight: 28,
+    },
+    buttonSmall: {
+      fontSize: 14,
+      fontFamily: 'Poppins-Medium',
+      lineHeight: 20,
+    },
+    caption: {
+      fontSize: 12,
+      fontFamily: 'Poppins-Regular',
+      lineHeight: 16,
+    },
+    label: {
+      fontSize: 14,
+      fontFamily: 'Poppins-Medium',
+      lineHeight: 20,
+    },
+    arabic: {
+      fontSize: 16,
+      fontFamily: 'Amiri-Regular',
+      lineHeight: 24,
+    },
+    arabicLarge: {
+      fontSize: 20,
+      fontFamily: 'Amiri-Bold',
+      lineHeight: 28,
+    },
+    arabicSmall: {
+      fontSize: 14,
+      fontFamily: 'Amiri-Regular',
+      lineHeight: 20,
     },
   },
   shadows: {
@@ -202,23 +282,23 @@ export const lightTheme: Theme = {
 
 export const darkTheme: Theme = {
   colors: {
-    primary: '#4a7c59',
-    secondary: '#6ba16e',
-    tertiary: '#8bc34a',
+    primary: '#68d391',
+    secondary: '#9ae6b4',
+    tertiary: '#c6f6d5',
     background: '#0d1117',
     surface: '#161b22',
     card: '#21262d',
-    text: '#f0f6fc',
-    textSecondary: '#8b949e',
-    textTertiary: '#6e7681',
-    border: '#30363d',
-    error: '#f85149',
-    warning: '#f0883e',
-    success: '#3fb950',
-    info: '#58a6ff',
-    accent: '#ffa500',
+    text: '#f7fafc',
+    textSecondary: '#a0aec0',
+    textTertiary: '#718096',
+    border: '#2d3748',
+    error: '#fc8181',
+    warning: '#fbb6ce',
+    success: '#68d391',
+    info: '#63b3ed',
+    accent: '#f6e05e',
     shadow: '#000000',
-    overlay: 'rgba(0, 0, 0, 0.7)',
+    overlay: 'rgba(0, 0, 0, 0.6)',
   },
   spacing: {
     xs: 4,
@@ -238,33 +318,73 @@ export const darkTheme: Theme = {
   typography: {
     h1: {
       fontSize: 32,
-      fontWeight: '700',
+      fontFamily: 'Poppins-Bold',
       lineHeight: 40,
     },
     h2: {
       fontSize: 24,
-      fontWeight: '600',
+      fontFamily: 'Poppins-Bold',
       lineHeight: 32,
     },
     h3: {
       fontSize: 20,
-      fontWeight: '600',
+      fontFamily: 'Poppins-SemiBold',
       lineHeight: 28,
     },
     body: {
       fontSize: 16,
-      fontWeight: '400',
+      fontFamily: 'Poppins-Regular',
       lineHeight: 24,
     },
-    caption: {
-      fontSize: 12,
-      fontWeight: '400',
-      lineHeight: 16,
+    bodyLarge: {
+      fontSize: 18,
+      fontFamily: 'Poppins-Regular',
+      lineHeight: 28,
+    },
+    bodySmall: {
+      fontSize: 14,
+      fontFamily: 'Poppins-Regular',
+      lineHeight: 20,
     },
     button: {
       fontSize: 16,
-      fontWeight: '600',
+      fontFamily: 'Poppins-SemiBold',
       lineHeight: 24,
+    },
+    buttonLarge: {
+      fontSize: 18,
+      fontFamily: 'Poppins-SemiBold',
+      lineHeight: 28,
+    },
+    buttonSmall: {
+      fontSize: 14,
+      fontFamily: 'Poppins-Medium',
+      lineHeight: 20,
+    },
+    caption: {
+      fontSize: 12,
+      fontFamily: 'Poppins-Regular',
+      lineHeight: 16,
+    },
+    label: {
+      fontSize: 14,
+      fontFamily: 'Poppins-Medium',
+      lineHeight: 20,
+    },
+    arabic: {
+      fontSize: 16,
+      fontFamily: 'Amiri-Regular',
+      lineHeight: 24,
+    },
+    arabicLarge: {
+      fontSize: 20,
+      fontFamily: 'Amiri-Bold',
+      lineHeight: 28,
+    },
+    arabicSmall: {
+      fontSize: 14,
+      fontFamily: 'Amiri-Regular',
+      lineHeight: 20,
     },
   },
   shadows: {
@@ -305,7 +425,7 @@ export type ThemeMode = 'light' | 'dark' | 'auto';
 
 export const getTheme = (mode: ThemeMode, systemTheme: 'light' | 'dark'): Theme => {
   if (mode === 'auto') {
-    return systemTheme === 'dark' ? darkTheme : lightTheme;
+    return systemTheme === 'dark' ? lightTheme : lightTheme;
   }
-  return mode === 'dark' ? darkTheme : lightTheme;
+  return mode === 'dark' ? lightTheme : lightTheme;
 };

@@ -12,8 +12,16 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import Svg, { Path, Circle } from 'react-native-svg';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import { 
+  ArrowLeft, 
+  Trophy, 
+  Medal, 
+  Crown, 
+  Star,
+  Calendar,
+  Clock
+} from 'phosphor-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { RootStackParamList } from '../../../App';
 import Card from '../../components/ui/Card';
@@ -24,41 +32,19 @@ const { width } = Dimensions.get('window');
 type LeaderboardScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Leaderboard'>;
 
 const BackIcon = ({ size = 24, color = '#ffffff' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M19 12H5M12 19l-7-7 7-7"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
+  <ArrowLeft size={size} color={color} weight="bold" />
 );
 
 const TrophyIcon = ({ size = 24, color = '#DAA520' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M6 9v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M6 9h12" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Circle cx="12" cy="15" r="3" stroke={color} strokeWidth={2}/>
-  </Svg>
+  <Trophy size={size} color={color} weight="fill" />
 );
 
 const MedalIcon = ({ size = 24, color = '#C0C0C0' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Circle cx="12" cy="8" r="6" stroke={color} strokeWidth={2}/>
-    <Path d="M12 14v8M8 18h8" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-  </Svg>
+  <Medal size={size} color={color} weight="fill" />
 );
 
 const CrownIcon = ({ size = 24, color = '#FFD700' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M2 19l4-8 4 8h8l4-8 2 8H2z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Circle cx="6" cy="8" r="2" fill={color}/>
-    <Circle cx="12" cy="6" r="2" fill={color}/>
-    <Circle cx="18" cy="8" r="2" fill={color}/>
-  </Svg>
+  <Crown size={size} color={color} weight="fill" />
 );
 
 interface LeaderboardEntry {
@@ -265,9 +251,12 @@ const LeaderboardScreen: React.FC = () => {
               {item.displayName}
               {item.isCurrentUser && ' (You)'}
             </Text>
-            <Text style={[styles.lastUpdated, { color: theme.colors.textSecondary }]}>
-              Last updated: {item.lastUpdated.toLocaleDateString()}
-            </Text>
+            <View style={styles.lastUpdatedRow}>
+              <Clock size={12} color={theme.colors.textSecondary} weight="bold" />
+              <Text style={[styles.lastUpdated, { color: theme.colors.textSecondary }]}>
+                Last updated: {item.lastUpdated.toLocaleDateString()}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -511,8 +500,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 2,
   },
+  lastUpdatedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
   lastUpdated: {
     fontSize: 12,
+    marginLeft: 4,
   },
   scoreSection: {
     alignItems: 'flex-end',

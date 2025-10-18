@@ -35,7 +35,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   const toggleTheme = () => {
     if (themeMode === 'light') {
-      setThemeMode('dark');
+      setThemeMode('light');
     } else if (themeMode === 'dark') {
       setThemeMode('auto');
     } else {
@@ -47,7 +47,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const loadThemeMode = async () => {
       try {
         const savedThemeMode = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-        if (savedThemeMode && ['light', 'dark', 'auto'].includes(savedThemeMode)) {
+        if (savedThemeMode && ['light'].includes(savedThemeMode)) {
           setThemeModeState(savedThemeMode as ThemeMode);
         }
       } catch (error) {
@@ -61,7 +61,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   }, []);
 
   const theme = getTheme(themeMode, systemColorScheme || 'light');
-  const isDark = theme === getTheme('dark', 'light');
+  const isDark = theme === getTheme('light', 'light');
 
   if (!isInitialized) {
     // Return a loading state or default theme while initializing
@@ -72,7 +72,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
           themeMode: 'auto',
           setThemeMode,
           toggleTheme,
-          isDark: systemColorScheme === 'dark',
+          isDark: systemColorScheme === 'light',
         }}
       >
         {children}

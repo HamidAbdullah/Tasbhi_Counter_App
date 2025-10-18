@@ -43,7 +43,6 @@ const Button: React.FC<ButtonProps> = ({
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
-      ...theme.shadows.medium,
     };
 
     // Size styles

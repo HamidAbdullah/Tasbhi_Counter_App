@@ -12,66 +12,51 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import Svg, { Path, Circle } from 'react-native-svg';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import {
+  ArrowLeft,
+  Gear,
+  Sun,
+  Moon,
+  SpeakerHigh,
+  Vibrate,
+  ArrowCounterClockwise,
+  Hash,
+  Info,
+} from 'phosphor-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../contexts/ThemeContext';
 import { RootStackParamList } from '../../../App';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 
-type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
+type SettingsScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'Settings'
+>;
 
 const BackIcon = ({ size = 24, color = '#ffffff' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M19 12H5M12 19l-7-7 7-7"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
+  <ArrowLeft size={size} color={color} weight="bold" />
 );
 
 const SettingsIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Circle cx="12" cy="12" r="3" stroke={color} strokeWidth={2} />
-    <Path
-      d="M12 1v6m0 6v6m11-7h-6m-6 0H1"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
+  <Gear size={size} color={color} weight="bold" />
 );
 
 const ThemeIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Circle cx="12" cy="12" r="5" fill={color} />
-    <Path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke={color} strokeWidth={2} strokeLinecap="round"/>
-  </Svg>
+  <Sun size={size} color={color} weight="bold" />
 );
 
 const SoundIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M11 5L6 9H2v6h4l5 4V5z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-  </Svg>
+  <SpeakerHigh size={size} color={color} weight="bold" />
 );
 
 const VibrationIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M2 12h4m14 0h-4m-2-6l-4 4 4 4m-8-8l4 4-4 4" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-  </Svg>
+  <Vibrate size={size} color={color} weight="bold" />
 );
 
 const ResetIcon = ({ size = 24, color = '#d73527' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M3 3v5h5" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-  </Svg>
+  <ArrowCounterClockwise size={size} color={color} weight="bold" />
 );
 
 interface SettingsData {
@@ -83,8 +68,8 @@ interface SettingsData {
 
 const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<SettingsScreenNavigationProp>();
-  const { theme, themeMode, setThemeMode, isDark } = useTheme();
-  
+  const { theme } = useTheme();
+
   const [settings, setSettings] = useState<SettingsData>({
     soundEnabled: true,
     vibrationEnabled: true,
@@ -149,7 +134,7 @@ const SettingsScreen: React.FC = () => {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -163,30 +148,37 @@ const SettingsScreen: React.FC = () => {
     subtitle?: string;
     children: React.ReactNode;
   }> = ({ icon, title, subtitle, children }) => (
-    <Card variant="outlined" padding="medium" style={[styles.settingItem, { backgroundColor: theme.colors.surface }]}>
+    <Card
+      variant="outlined"
+      padding="medium"
+      style={[styles.settingItem, { backgroundColor: theme.colors.surface }]}
+    >
       <View style={styles.settingHeader}>
-        <View style={styles.settingIcon}>
-          {icon}
-        </View>
+        <View style={styles.settingIcon}>{icon}</View>
         <View style={styles.settingContent}>
           <Text style={[styles.settingTitle, { color: theme.colors.text }]}>
             {title}
           </Text>
           {subtitle && (
-            <Text style={[styles.settingSubtitle, { color: theme.colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.settingSubtitle,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
               {subtitle}
             </Text>
           )}
         </View>
       </View>
-      <View style={styles.settingControl}>
-        {children}
-      </View>
+      <View style={styles.settingControl}>{children}</View>
     </Card>
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       {/* Header */}
       <LinearGradient
         colors={[theme.colors.primary, theme.colors.secondary]}
@@ -200,7 +192,6 @@ const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
 
           <View style={styles.headerCenter}>
-            <SettingsIcon size={28} color={theme.colors.surface} />
             <Text style={[styles.headerTitle, { color: theme.colors.surface }]}>
               Settings
             </Text>
@@ -211,52 +202,12 @@ const SettingsScreen: React.FC = () => {
       </LinearGradient>
 
       <ScrollView
-        style={[styles.scrollView, { backgroundColor: theme.colors.background }]}
+        style={[
+          styles.scrollView,
+          { backgroundColor: theme.colors.background },
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Appearance Section */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-            Appearance
-          </Text>
-          
-          <SettingItem
-            icon={<ThemeIcon size={24} color={theme.colors.primary} />}
-            title="Theme"
-            subtitle="Choose your preferred theme"
-          >
-            <View style={styles.themeSelector}>
-              {[
-                { key: 'light', label: 'Light' },
-                { key: 'dark', label: 'Dark' },
-                { key: 'auto', label: 'Auto' },
-              ].map(({ key, label }) => (
-                <TouchableOpacity
-                  key={key}
-                  style={[
-                    styles.themeOption,
-                    {
-                      backgroundColor: themeMode === key ? theme.colors.primary : theme.colors.border,
-                    },
-                  ]}
-                  onPress={() => setThemeMode(key as any)}
-                >
-                  <Text
-                    style={[
-                      styles.themeOptionText,
-                      {
-                        color: themeMode === key ? theme.colors.surface : theme.colors.text,
-                      },
-                    ]}
-                  >
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </SettingItem>
-        </View>
-
         {/* Counter Settings Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
@@ -264,7 +215,7 @@ const SettingsScreen: React.FC = () => {
           </Text>
 
           <SettingItem
-            icon={<Text style={[styles.iconText, { color: theme.colors.primary }]}>🔢</Text>}
+            icon={<Hash size={24} color={theme.colors.primary} weight="bold" />}
             title="Default Round Count"
             subtitle="Number of counts for each round"
           >
@@ -285,15 +236,28 @@ const SettingsScreen: React.FC = () => {
           </SettingItem>
 
           <SettingItem
-            icon={<Text style={[styles.iconText, { color: theme.colors.primary }]}>🔄</Text>}
+            icon={
+              <ArrowCounterClockwise
+                size={24}
+                color={theme.colors.primary}
+                weight="bold"
+              />
+            }
             title="Auto Reset"
             subtitle="Automatically reset counter after completion"
           >
             <Switch
               value={settings.autoReset}
-              onValueChange={(value) => updateSetting('autoReset', value)}
-              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-              thumbColor={settings.autoReset ? theme.colors.surface : theme.colors.textSecondary}
+              onValueChange={value => updateSetting('autoReset', value)}
+              trackColor={{
+                false: theme.colors.border,
+                true: theme.colors.primary,
+              }}
+              thumbColor={
+                settings.autoReset
+                  ? theme.colors.surface
+                  : theme.colors.textSecondary
+              }
             />
           </SettingItem>
         </View>
@@ -311,9 +275,16 @@ const SettingsScreen: React.FC = () => {
           >
             <Switch
               value={settings.soundEnabled}
-              onValueChange={(value) => updateSetting('soundEnabled', value)}
-              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-              thumbColor={settings.soundEnabled ? theme.colors.surface : theme.colors.textSecondary}
+              onValueChange={value => updateSetting('soundEnabled', value)}
+              trackColor={{
+                false: theme.colors.border,
+                true: theme.colors.primary,
+              }}
+              thumbColor={
+                settings.soundEnabled
+                  ? theme.colors.surface
+                  : theme.colors.textSecondary
+              }
             />
           </SettingItem>
 
@@ -324,9 +295,16 @@ const SettingsScreen: React.FC = () => {
           >
             <Switch
               value={settings.vibrationEnabled}
-              onValueChange={(value) => updateSetting('vibrationEnabled', value)}
-              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-              thumbColor={settings.vibrationEnabled ? theme.colors.surface : theme.colors.textSecondary}
+              onValueChange={value => updateSetting('vibrationEnabled', value)}
+              trackColor={{
+                false: theme.colors.border,
+                true: theme.colors.primary,
+              }}
+              thumbColor={
+                settings.vibrationEnabled
+                  ? theme.colors.surface
+                  : theme.colors.textSecondary
+              }
             />
           </SettingItem>
         </View>
@@ -359,16 +337,34 @@ const SettingsScreen: React.FC = () => {
             About
           </Text>
 
-          <Card variant="outlined" padding="medium" style={[styles.infoCard, { backgroundColor: theme.colors.surface }]}>
+          <Card
+            variant="outlined"
+            padding="medium"
+            style={[styles.infoCard, { backgroundColor: theme.colors.surface }]}
+          >
             <View style={styles.appInfo}>
-              <Text style={[styles.appName, { color: theme.colors.text }]}>
-                Digital Tasbih
-              </Text>
-              <Text style={[styles.appVersion, { color: theme.colors.textSecondary }]}>
+              <View style={styles.appInfoHeader}>
+                <Info size={24} color={theme.colors.primary} weight="bold" />
+                <Text style={[styles.appName, { color: theme.colors.text }]}>
+                  Digital Tasbih
+                </Text>
+              </View>
+              <Text
+                style={[
+                  styles.appVersion,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 Version 2.0.0
               </Text>
-              <Text style={[styles.appDescription, { color: theme.colors.textSecondary }]}>
-                A modern, beautiful digital tasbih counter with Islamic themes and comprehensive features.
+              <Text
+                style={[
+                  styles.appDescription,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
+                A modern, beautiful digital tasbih counter with Islamic themes
+                and comprehensive features.
               </Text>
             </View>
           </Card>
@@ -507,10 +503,15 @@ const styles = StyleSheet.create({
   appInfo: {
     alignItems: 'center',
   },
+  appInfoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   appName: {
     fontSize: 20,
     fontWeight: '700',
-    marginBottom: 4,
+    marginLeft: 8,
   },
   appVersion: {
     fontSize: 14,
