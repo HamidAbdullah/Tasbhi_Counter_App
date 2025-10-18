@@ -449,7 +449,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
         ]}
       >
         {/* Main Logo/Icon */}
-        <Animated.View
+        {/* <Animated.View
           style={[
             styles.logoContainer,
             {
@@ -465,7 +465,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
               ت
             </Text>
           </View>
-        </Animated.View>
+        </Animated.View> */}
 
         {/* App Title */}
         <Animated.Text
