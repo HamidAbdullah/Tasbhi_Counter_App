@@ -36,10 +36,7 @@ const AppNavigator: React.FC = () => {
   
   return (
     <NavigationContainer>
-      <StatusBar 
-        barStyle={isDark ? "light-content" : "dark-content"} 
-        backgroundColor={theme.colors.background} 
-      />
+      <StatusBar hidden barStyle={'light-content'}/>
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{

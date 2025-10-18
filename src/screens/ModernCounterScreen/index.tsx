@@ -389,10 +389,7 @@ const ModernCounterScreen: React.FC = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
-      <StatusBar
-        barStyle={isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={theme.colors.primary}
-      />
+      <StatusBar hidden />
 
       <LinearGradient
         colors={[

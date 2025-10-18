@@ -485,7 +485,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
             { opacity: fadeAnim },
           ]}
         >
-          <Animated.View
+          <Animated.Text
             style={[
               styles.bismillahText,
               {
@@ -495,7 +495,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
             ]}
           >
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-          </Animated.View>
+          </Animated.Text>
         </Animated.View>
 
         {/* Subtitle */}
