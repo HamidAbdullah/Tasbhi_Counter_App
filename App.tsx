@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar, StyleSheet } from 'react-native';
@@ -9,8 +9,10 @@ import ModernCounterScreen from './src/screens/ModernCounterScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
+import SplashScreen from './src/screens/SplashScreen';
 
 export type RootStackParamList = {
+  Splash: undefined;
   Home: undefined;
   Counter: { zikr: ZikrItem };
   Settings: undefined;
@@ -22,6 +24,15 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC = () => {
   const { theme, isDark } = useTheme();
+  const [showSplash, setShowSplash] = useState(true);
+  
+  const handleSplashFinish = () => {
+    setShowSplash(false);
+  };
+  
+  if (showSplash) {
+    return <SplashScreen onAnimationFinish={handleSplashFinish} />;
+  }
   
   return (
     <NavigationContainer>
