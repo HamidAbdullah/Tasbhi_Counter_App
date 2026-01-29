@@ -30,14 +30,18 @@ import {
 import { useTheme } from '../../contexts/ThemeContext';
 import { ZikrItem } from '../../types';
 import { AZKAAR } from '../../constants/AzkarData';
-import { RootStackParamList } from '../../../App';
+import { RootStackParamList, TabParamList } from '../../types';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { CompositeNavigationProp } from '@react-navigation/native';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { FONT_WEIGHTS, TYPOGRAPHY } from '../../constants/Fonts';
 import { StorageUtils } from '../../Utils/StorageUtils';
 
-
-type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
+type HomeScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, 'Dhikr'>,
+  StackNavigationProp<RootStackParamList>
+>;
 
 const IslamicStarIcon = ({ size = 20, color = '#DAA520' }) => (
   <Star size={size} color={color} weight="fill" />
@@ -148,7 +152,7 @@ const ModernHomeScreen: React.FC = () => {
 
     try {
       await StorageUtils.updateCustomZikr(editingZikr.id, updatedZikr);
-      setCustomZikrs(customZikrs.map(zikr => 
+      setCustomZikrs(customZikrs.map(zikr =>
         zikr.id === editingZikr.id ? updatedZikr : zikr
       ));
       setNewZikr({

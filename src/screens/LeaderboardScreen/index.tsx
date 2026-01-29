@@ -13,17 +13,17 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { 
-  ArrowLeft, 
-  Trophy, 
-  Medal, 
-  Crown, 
+import {
+  ArrowLeft,
+  Trophy,
+  Medal,
+  Crown,
   Star,
   Calendar,
   Clock
 } from 'phosphor-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import { RootStackParamList } from '../../../App';
+import { RootStackParamList } from '../../types';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { StorageUtils } from '../../Utils/StorageUtils';
@@ -66,7 +66,7 @@ type LeaderboardType = 'daily' | 'weekly' | 'monthly' | 'alltime';
 const LeaderboardScreen: React.FC = () => {
   const navigation = useNavigation<LeaderboardScreenNavigationProp>();
   const { theme } = useTheme();
-  
+
   const [leaderboardType, setLeaderboardType] = useState<LeaderboardType>('daily');
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [currentUserRank, setCurrentUserRank] = useState<number>(0);
@@ -91,7 +91,7 @@ const LeaderboardScreen: React.FC = () => {
       const userStats = await StorageUtils.calculateDashboardStats();
       const today = new Date().toISOString().split('T')[0];
       const todayStats = await StorageUtils.getDailyStats(today) || { totalCount: 0 };
-      
+
       // Mock data for other users - in real app, this would come from Firebase
       const mockData: LeaderboardEntry[] = [
         {
@@ -179,7 +179,7 @@ const LeaderboardScreen: React.FC = () => {
       }));
 
       setLeaderboardData(rankedData);
-      
+
       // Find current user rank
       const currentUser = rankedData.find(item => item.isCurrentUser);
       setCurrentUserRank(currentUser?.rank || 0);
@@ -238,7 +238,7 @@ const LeaderboardScreen: React.FC = () => {
       padding="medium"
       style={[
         styles.leaderboardItem,
-        { 
+        {
           backgroundColor: item.isCurrentUser ? `${theme.colors.primary}10` : theme.colors.surface,
           borderColor: item.isCurrentUser ? theme.colors.primary : theme.colors.border,
         }
@@ -279,9 +279,9 @@ const LeaderboardScreen: React.FC = () => {
             {getCurrentValue(item)}
           </Text>
           <Text style={[styles.scoreLabel, { color: theme.colors.textSecondary }]}>
-            {leaderboardType === 'daily' ? 'Today' : 
-             leaderboardType === 'weekly' ? 'This Week' :
-             leaderboardType === 'monthly' ? 'This Month' : 'All Time'}
+            {leaderboardType === 'daily' ? 'Today' :
+              leaderboardType === 'weekly' ? 'This Week' :
+                leaderboardType === 'monthly' ? 'This Month' : 'All Time'}
           </Text>
         </View>
       </View>

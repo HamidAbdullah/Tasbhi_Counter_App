@@ -425,7 +425,7 @@ export type ThemeMode = 'light' | 'dark' | 'auto';
 
 export const getTheme = (mode: ThemeMode, systemTheme: 'light' | 'dark'): Theme => {
   if (mode === 'auto') {
-    return systemTheme === 'dark' ? lightTheme : lightTheme;
+    return systemTheme === 'dark' ? darkTheme : lightTheme;
   }
-  return mode === 'dark' ? lightTheme : lightTheme;
+  return mode === 'dark' ? darkTheme : lightTheme;
 };

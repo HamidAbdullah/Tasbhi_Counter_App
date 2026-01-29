@@ -19,7 +19,7 @@ import {
   ArrowCounterClockwise,
   Trophy,
 } from 'phosphor-react-native';
-import { RootStackParamList } from '../../../App';
+import { RootStackParamList } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import ModernTapTasbih from '../../components/ModernTapTasbih';
 import Button from '../../components/ui/Button';
@@ -59,15 +59,15 @@ const ModernCounterScreen: React.FC = () => {
   const loadExistingCount = async () => {
     try {
       setIsLoading(true);
-      
+
       // Add timeout to prevent long loading
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Loading timeout')), 2000)
       );
-      
+
       const dataPromise = StorageUtils.getCounterData(zikr.id);
       const existingCount = await Promise.race([dataPromise, timeoutPromise]) as number;
-      
+
       setCount(existingCount);
     } catch (error) {
       console.error('Error loading existing count:', error);
@@ -336,12 +336,12 @@ const ModernCounterScreen: React.FC = () => {
     const newCount = count + 1;
     setCount(newCount);
     HapticFeedback.trigger('impactLight');
-    
+
     // Save to Async Storage (non-blocking)
     StorageUtils.saveCounterData(zikr.id, newCount).catch(error => {
       console.error('Error saving counter data:', error);
     });
-    
+
     // Update daily stats (non-blocking)
     const today = new Date().toISOString().split('T')[0];
     StorageUtils.getDailyStats(today).then(todayStats => {
@@ -352,7 +352,7 @@ const ModernCounterScreen: React.FC = () => {
     }).catch(error => {
       console.error('Error updating daily stats:', error);
     });
-    
+
     // Update streak (non-blocking)
     StorageUtils.updateStreak().catch(error => {
       console.error('Error updating streak:', error);
@@ -369,7 +369,7 @@ const ModernCounterScreen: React.FC = () => {
           setCount(0);
           setIsCompleted(false);
           HapticFeedback.trigger('impactMedium');
-          
+
           // Reset in Async Storage
           try {
             await StorageUtils.resetCounter(zikr.id);

@@ -26,7 +26,7 @@ import {
 } from 'phosphor-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../contexts/ThemeContext';
-import { RootStackParamList } from '../../../App';
+import { RootStackParamList } from '../../types';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { StorageUtils } from '../../Utils/StorageUtils';

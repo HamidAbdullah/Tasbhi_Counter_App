@@ -11,12 +11,12 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { 
-  ArrowLeft, 
-  ChartBar, 
-  Trophy, 
-  Calendar, 
-  Target, 
+import {
+  ArrowLeft,
+  ChartBar,
+  Trophy,
+  Calendar,
+  Target,
   Star,
   House,
   Gear,
@@ -24,7 +24,7 @@ import {
 } from 'phosphor-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../contexts/ThemeContext';
-import { RootStackParamList } from '../../../App';
+import { RootStackParamList } from '../../types';
 import { CounterData } from '../../types';
 import Card from '../../components/ui/Card';
 import CircularProgress from '../../components/ui/CircularProgress';
@@ -95,13 +95,13 @@ const DashboardScreen: React.FC = () => {
     try {
       // Check and perform daily reset if needed
       await StorageUtils.checkDailyReset();
-      
+
       // Update streak first
       await StorageUtils.updateStreak();
-      
+
       // Get comprehensive dashboard stats from StorageUtils
       const dashboardStats = await StorageUtils.calculateDashboardStats();
-      
+
       // Get most recited zikr name
       let favoriteZikr = 'سُبْحَانَ اللهِ';
       if (dashboardStats.mostRecitedZikrId > 0) {
@@ -159,14 +159,14 @@ const DashboardScreen: React.FC = () => {
       {progress !== undefined && (
         <View style={styles.progressContainer}>
           <View style={[styles.progressBar, { backgroundColor: theme.colors.border }]}>
-            <View 
+            <View
               style={[
-                styles.progressFill, 
-                { 
+                styles.progressFill,
+                {
                   width: `${Math.min(progress * 100, 100)}%`,
                   backgroundColor: theme.colors[variant],
                 }
-              ]} 
+              ]}
             />
           </View>
           <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
@@ -213,7 +213,7 @@ const DashboardScreen: React.FC = () => {
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
             Today's Progress
           </Text>
-          
+
           <Card variant="elevated" padding="large" style={[styles.dailyCard, { backgroundColor: theme.colors.surface }]}>
             <View style={styles.dailyContent}>
               <CircularProgress
@@ -232,7 +232,7 @@ const DashboardScreen: React.FC = () => {
                   </Text>
                 </View>
               </CircularProgress>
-              
+
               <View style={styles.dailyInfo}>
                 <Text style={[styles.dailyTitle, { color: theme.colors.text }]}>
                   Daily Goal
@@ -250,7 +250,7 @@ const DashboardScreen: React.FC = () => {
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
             Statistics
           </Text>
-          
+
           <View style={styles.statsGrid}>
             <StatCard
               icon={<TrophyIcon size={20} color={theme.colors.accent} />}
@@ -259,7 +259,7 @@ const DashboardScreen: React.FC = () => {
               subtitle="All time"
               variant="accent"
             />
-            
+
             <StatCard
               icon={<TargetIcon size={20} color={theme.colors.primary} />}
               title="Rounds Completed"
@@ -267,7 +267,7 @@ const DashboardScreen: React.FC = () => {
               subtitle="Complete cycles"
               variant="primary"
             />
-            
+
             <StatCard
               icon={<CalendarIcon size={20} color={theme.colors.secondary} />}
               title="Weekly Count"
@@ -275,7 +275,7 @@ const DashboardScreen: React.FC = () => {
               subtitle="This week"
               variant="secondary"
             />
-            
+
             <StatCard
               icon={<StatsIcon size={20} color={theme.colors.info} />}
               title="Current Streak"
@@ -291,7 +291,7 @@ const DashboardScreen: React.FC = () => {
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
             Monthly Overview
           </Text>
-          
+
           <Card variant="outlined" padding="medium" style={[styles.monthlyCard, { backgroundColor: theme.colors.surface }]}>
             <View style={styles.monthlyContent}>
               <View style={styles.monthlyStat}>
@@ -302,9 +302,9 @@ const DashboardScreen: React.FC = () => {
                   This Month
                 </Text>
               </View>
-              
+
               <View style={styles.monthlyDivider} />
-              
+
               <View style={styles.monthlyStat}>
                 <Text style={[styles.monthlyValue, { color: theme.colors.secondary }]}>
                   {stats.favoriteZikr}
@@ -322,7 +322,7 @@ const DashboardScreen: React.FC = () => {
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
             Quick Actions
           </Text>
-          
+
           <View style={styles.actionsGrid}>
             <Button
               title="Start Counting"
@@ -333,7 +333,7 @@ const DashboardScreen: React.FC = () => {
               icon={<House size={20} color={theme.colors.surface} weight="bold" />}
               style={styles.actionButton}
             />
-            
+
             <View style={styles.actionsRow}>
               <Button
                 title="Leaderboard"
@@ -344,7 +344,7 @@ const DashboardScreen: React.FC = () => {
                 icon={<Users size={20} color={theme.colors.surface} weight="bold" />}
                 style={styles.actionButton}
               />
-              
+
               <Button
                 title="Settings"
                 onPress={() => navigation.navigate('Settings' as any)}
