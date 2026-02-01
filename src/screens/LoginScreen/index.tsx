@@ -5,7 +5,6 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
-    SafeAreaView,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -19,12 +18,15 @@ import type { StackNavigationProp } from '@react-navigation/stack';
 import { useTheme } from '../../contexts/ThemeContext';
 import { RootStackParamList } from '../../types';
 import { EnvelopeSimple, Lock, GoogleLogo, ArrowLeft, ArrowRight } from 'phosphor-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ScreenWrapper from '../../components/ScreenWrapper';
 import AuthService from '../../services/AuthService';
 
 const { width, height } = Dimensions.get('window');
 
 const LoginScreen: React.FC = () => {
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    const insets = useSafeAreaInsets();
     const { theme } = useTheme();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -60,14 +62,14 @@ const LoginScreen: React.FC = () => {
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <ScreenWrapper withPadding={false}>
             <LinearGradient
                 colors={[theme.colors.primary, theme.colors.secondary]}
                 style={styles.headerBackground}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
             >
-                <SafeAreaView>
+                <View style={{ paddingTop: insets.top }}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                         <ArrowLeft size={24} color="#FFF" weight="bold" />
                     </TouchableOpacity>
@@ -75,7 +77,7 @@ const LoginScreen: React.FC = () => {
                         <Text style={styles.headerTitle}>Welcome Back</Text>
                         <Text style={styles.headerSubtitle}>Sign in to sync your spiritual journey</Text>
                     </View>
-                </SafeAreaView>
+                </View>
             </LinearGradient>
 
             <KeyboardAvoidingView
@@ -165,7 +167,7 @@ const LoginScreen: React.FC = () => {
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
-        </View>
+        </ScreenWrapper>
     );
 };
 

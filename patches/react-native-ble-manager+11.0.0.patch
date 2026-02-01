@@ -1,0 +1,30 @@
+diff --git a/node_modules/react-native-ble-manager/android/src/main/java/it/innove/Peripheral.java b/node_modules/react-native-ble-manager/android/src/main/java/it/innove/Peripheral.java
+index 7e05627..3573ce0 100644
+--- a/node_modules/react-native-ble-manager/android/src/main/java/it/innove/Peripheral.java
++++ b/node_modules/react-native-ble-manager/android/src/main/java/it/innove/Peripheral.java
+@@ -423,8 +423,9 @@ public class Peripheral extends BluetoothGattCallback {
+     }
+ 
+     @Override
+-    public void onCharacteristicChanged(@NonNull final BluetoothGatt gatt, @NonNull final BluetoothGattCharacteristic characteristic, @NonNull final byte[] data) {
+-        super.onCharacteristicChanged(gatt, characteristic, data);
++    public void onCharacteristicChanged(@NonNull final BluetoothGatt gatt,
++            @NonNull final BluetoothGattCharacteristic characteristic, @NonNull final byte[] data) {
++        // Removed super call to prevent infinite recursion on Android 13+
+         try {
+             String charString = characteristic.getUuid().toString();
+             String service = characteristic.getService().getUuid().toString();
+@@ -467,10 +468,11 @@ public class Peripheral extends BluetoothGattCallback {
+     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+         onCharacteristicRead(gatt, characteristic, characteristic.getValue(), status);
+     }
++
+     @Override
+     public void onCharacteristicRead(@NonNull final BluetoothGatt gatt,
+-                                     @NonNull final BluetoothGattCharacteristic characteristic,
+-                                     @NonNull byte[] data, int status) {
++            @NonNull final BluetoothGattCharacteristic characteristic,
++            @NonNull byte[] data, int status) {
+         super.onCharacteristicRead(gatt, characteristic, data, status);
+ 
+         mainHandler.post(() -> {

@@ -9,7 +9,7 @@ class AuthService {
     initialize() {
         try {
             GoogleSignin.configure({
-                offlineAccess: true,
+                // Removed offlineAccess as it requires a webClientID for Android
             });
         } catch (error) {
             console.error('GoogleSignin configure error:', error);

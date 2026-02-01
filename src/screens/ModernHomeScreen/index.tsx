@@ -12,6 +12,8 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ScreenWrapper from '../../components/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -58,6 +60,7 @@ const BookQuranIcon = ({ size = 20, color = '#4a7c59' }) => (
 const ModernHomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const [customZikrs, setCustomZikrs] = useState<ZikrItem[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -286,9 +289,7 @@ const ModernHomeScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
+    <ScreenWrapper withPadding={false}>
       {/* Modern Header */}
       <LinearGradient
         colors={[
@@ -296,7 +297,7 @@ const ModernHomeScreen: React.FC = () => {
           theme.colors.secondary,
           theme.colors.tertiary,
         ]}
-        style={styles.header}
+        style={[styles.header, { paddingTop: insets.top + 15 }]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
@@ -804,7 +805,7 @@ const ModernHomeScreen: React.FC = () => {
           </Card>
         </View>
       </Modal>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 

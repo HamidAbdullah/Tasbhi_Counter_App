@@ -2,9 +2,10 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import ModernHomeScreen from '../screens/ModernHomeScreen';
 import DigitalTasbeehScreen from '../screens/DigitalTasbeehScreen';
+import BluetoothScreen from '../screens/BluetoothScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { useTheme } from '../contexts/ThemeContext';
-import { House, BluetoothConnected, User } from 'phosphor-react-native';
+import { House, BluetoothConnected, User, Bluetooth } from 'phosphor-react-native';
 import { Platform, ViewStyle } from 'react-native';
 import { RootStackParamList, TabParamList } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -58,6 +59,16 @@ const MainTabNavigator = () => {
                         tabBarLabel: 'Tasbeeh',
                         tabBarIcon: ({ color, size, focused }: { color: string; size: number; focused: boolean }) => (
                             <BluetoothConnected size={size} color={color} weight={focused ? 'fill' : 'regular'} />
+                        ),
+                    }}
+                />
+                <Tab.Screen
+                    name="Bluetooth"
+                    component={BluetoothScreen}
+                    options={{
+                        tabBarLabel: 'Ring',
+                        tabBarIcon: ({ color, size, focused }: { color: string; size: number; focused: boolean }) => (
+                            <Bluetooth size={size} color={color} weight={focused ? 'fill' : 'regular'} />
                         ),
                     }}
                 />

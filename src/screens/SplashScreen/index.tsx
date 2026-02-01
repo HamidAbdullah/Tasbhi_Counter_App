@@ -7,6 +7,7 @@ import {
   Dimensions,
   StatusBar,
 } from 'react-native';
+import ScreenWrapper from '../../components/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Star, Moon, Sun, Heart, Sparkle } from 'phosphor-react-native';
@@ -19,7 +20,7 @@ interface SplashScreenProps {
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
   const { theme } = useTheme();
-  
+
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
@@ -27,7 +28,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const bismillahAnim = useRef(new Animated.Value(0)).current;
-  
+
   // Floating elements animations
   const star1Anim = useRef(new Animated.Value(0)).current;
   const star2Anim = useRef(new Animated.Value(0)).current;
@@ -302,9 +303,9 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
   });
 
   return (
-    <View style={styles.container}>
+    <ScreenWrapper statusBarHidden={true} withPadding={false}>
       <StatusBar hidden />
-      
+
       {/* Background Gradient */}
       <LinearGradient
         colors={[
@@ -570,7 +571,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
           />
         </View>
       </Animated.View>
-    </View>
+    </ScreenWrapper>
   );
 };
 

@@ -30,5 +30,6 @@ export type RootStackParamList = {
 export type TabParamList = {
   Dhikr: undefined;
   Digital: undefined;
+  Bluetooth: undefined;
   ProfileTab: undefined;
 };

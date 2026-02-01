@@ -5,9 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ScreenWrapper from '../../components/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -69,6 +70,7 @@ interface DashboardStats {
 const DashboardScreen: React.FC = () => {
   const navigation = useNavigation<DashboardScreenNavigationProp>();
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const [stats, setStats] = useState<DashboardStats>({
     totalCount: 0,
     totalRounds: 0,
@@ -180,11 +182,11 @@ const DashboardScreen: React.FC = () => {
   const dailyProgressPercentage = stats.dailyProgress / stats.dailyGoal;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <ScreenWrapper withPadding={false}>
       {/* Header */}
       <LinearGradient
         colors={[theme.colors.primary, theme.colors.secondary]}
-        style={styles.header}
+        style={[styles.header, { paddingTop: insets.top + 15 }]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
@@ -360,7 +362,7 @@ const DashboardScreen: React.FC = () => {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 
@@ -369,7 +371,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingTop: 15,
     paddingBottom: 10,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,

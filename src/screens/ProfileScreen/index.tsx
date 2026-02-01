@@ -4,11 +4,12 @@ import {
     Text,
     StyleSheet,
     ScrollView,
-    SafeAreaView,
     TouchableOpacity,
     Image,
     Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ScreenWrapper from '../../components/ScreenWrapper';
 import { useTheme } from '../../contexts/ThemeContext';
 import { User, Gear, ChartLineUp, ShieldCheck, SignOut, CaretRight, Trophy } from 'phosphor-react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -20,6 +21,7 @@ import { RootStackParamList } from '../../types';
 const ProfileScreen: React.FC = () => {
     const { theme } = useTheme();
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    const insets = useSafeAreaInsets();
     const [user, setUser] = useState(AuthService.getCurrentUser());
 
     useEffect(() => {
@@ -77,12 +79,12 @@ const ProfileScreen: React.FC = () => {
     );
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <ScreenWrapper withPadding={false}>
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Header / Profile Card */}
                 <LinearGradient
                     colors={[theme.colors.primary, theme.colors.secondary]}
-                    style={styles.header}
+                    style={[styles.header, { paddingTop: insets.top + 20 }]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                 >
@@ -161,7 +163,7 @@ const ProfileScreen: React.FC = () => {
                 </View>
                 <View style={{ height: 100 }} />
             </ScrollView>
-        </SafeAreaView>
+        </ScreenWrapper>
     );
 };
 
@@ -170,7 +172,6 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     header: {
-        paddingTop: 40,
         paddingBottom: 40,
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,

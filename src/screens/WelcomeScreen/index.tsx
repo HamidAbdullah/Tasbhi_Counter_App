@@ -7,8 +7,9 @@ import {
     ImageBackground,
     Dimensions,
     TouchableOpacity,
-    SafeAreaView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ScreenWrapper from '../../components/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -32,9 +33,10 @@ const WelcomeScreen: React.FC = () => {
         navigation.navigate('MainTabs' as any);
     };
 
+    const insets = useSafeAreaInsets();
+
     return (
-        <View style={styles.container}>
-            <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+        <ScreenWrapper withPadding={false}>
             <ImageBackground
                 source={require('../../assests/images/welcome_bg.png')}
                 style={styles.backgroundImage}
@@ -44,7 +46,7 @@ const WelcomeScreen: React.FC = () => {
                     colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.9)']}
                     style={styles.gradient}
                 >
-                    <SafeAreaView style={styles.content}>
+                    <View style={[styles.content, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
                         <View style={styles.topSection}>
                             {/* Logo or App Name */}
                             <View style={styles.logoContainer}>
@@ -84,10 +86,10 @@ const WelcomeScreen: React.FC = () => {
                                 By continuing, you agree to our Terms and Privacy Policy
                             </Text>
                         </View>
-                    </SafeAreaView>
+                    </View>
                 </LinearGradient>
             </ImageBackground>
-        </View>
+        </ScreenWrapper>
     );
 };
 

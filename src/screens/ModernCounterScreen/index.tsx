@@ -8,8 +8,9 @@ import {
   Alert,
   Animated,
   Dimensions,
-  StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ScreenWrapper from '../../components/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -44,6 +45,7 @@ const ModernCounterScreen: React.FC = () => {
   const route = useRoute();
   const { zikr } = (route as any).params;
   const { theme, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const [count, setCount] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -386,10 +388,7 @@ const ModernCounterScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <StatusBar hidden />
+    <ScreenWrapper withPadding={false}>
 
       <LinearGradient
         colors={[
@@ -402,7 +401,7 @@ const ModernCounterScreen: React.FC = () => {
         end={{ x: 1, y: 1 }}
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { marginTop: insets.top }]}>
           <TouchableOpacity onPress={goBack} style={styles.headerButton}>
             <BackIcon size={24} color={theme.colors.surface} />
           </TouchableOpacity>
@@ -582,7 +581,7 @@ const ModernCounterScreen: React.FC = () => {
           )}
         </View>
       </LinearGradient>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 

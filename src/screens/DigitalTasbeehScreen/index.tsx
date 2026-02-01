@@ -3,10 +3,11 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     TouchableOpacity,
     Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ScreenWrapper from '../../components/ScreenWrapper';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Bluetooth, Devices, WifiHigh, CircleNotch, BluetoothConnected } from 'phosphor-react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -15,10 +16,11 @@ const { width } = Dimensions.get('window');
 
 const DigitalTasbeehScreen: React.FC = () => {
     const { theme } = useTheme();
+    const insets = useSafeAreaInsets();
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            <View style={styles.content}>
+        <ScreenWrapper withPadding={false}>
+            <View style={[styles.content, { paddingTop: insets.top + 24 }]}>
                 <View style={styles.header}>
                     <Text style={[styles.title, { color: theme.colors.text }]}>Digital Connection</Text>
                     <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
@@ -71,7 +73,7 @@ const DigitalTasbeehScreen: React.FC = () => {
                     <Text style={styles.connectButtonText}>Scan for Devices</Text>
                 </TouchableOpacity>
             </View>
-        </SafeAreaView>
+        </ScreenWrapper>
     );
 };
 
@@ -85,7 +87,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     header: {
-        marginTop: 20,
+        marginTop: 0,
     },
     title: {
         fontSize: 28,

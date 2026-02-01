@@ -3,6 +3,7 @@ import AuthService from './src/services/AuthService';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import MainTabNavigator from './src/navigation/MainTabNavigator';
@@ -35,7 +36,11 @@ const AppNavigator: React.FC = () => {
 
   return (
     <NavigationContainer>
-      <StatusBar hidden barStyle={'light-content'} />
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor="transparent"
+        translucent
+      />
       <Stack.Navigator
         initialRouteName="Welcome"
         screenOptions={{
@@ -58,9 +63,11 @@ const AppNavigator: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <AppNavigator />
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppNavigator />
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 };
 
