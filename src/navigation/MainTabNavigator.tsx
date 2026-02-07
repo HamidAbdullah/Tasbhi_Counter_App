@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import ModernHomeScreen from '../screens/ModernHomeScreen';
+import TasbeehScreen from '../screens/TasbeehScreen';
 import BluetoothScreen from '../screens/BluetoothScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -58,9 +58,9 @@ const MainTabNavigator = () => {
             >
                 <Tab.Screen
                     name="Dhikr"
-                    component={ModernHomeScreen}
+                    component={TasbeehScreen}
                     options={{
-                        tabBarLabel: 'My Dhikr',
+                        tabBarLabel: 'Tasbeeh',
                         tabBarIcon: ({ color, size, focused }: { color: string; size: number; focused: boolean }) => (
                             <House size={size} color={color} weight={focused ? 'fill' : 'regular'} />
                         ),

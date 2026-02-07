@@ -25,12 +25,12 @@ import {
   Star,
   CheckCircle,
   X,
+  CaretRight,
   ClockCounterClockwise,
-  MagnifyingGlass,
 } from 'phosphor-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ZikrItem } from '../../types';
-import { AZKAAR, ZIKR_CATEGORIES } from '../../constants/AzkarData';
+import { AZKAAR } from '../../constants/AzkarData';
 import { RootStackParamList, TabParamList } from '../../types';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp } from '@react-navigation/native';
@@ -66,8 +66,6 @@ const ModernHomeScreen: React.FC = () => {
   const [editingZikr, setEditingZikr] = useState<ZikrItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [recentZikrs, setRecentZikrs] = useState<ZikrItem[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [fabAnimation] = useState(new Animated.Value(1));
   const [newZikr, setNewZikr] = useState({
     arabic: '',
@@ -114,32 +112,8 @@ const ModernHomeScreen: React.FC = () => {
     navigation.navigate('Counter', { zikr });
   };
 
-  const filterZikrs = (list: ZikrItem[], forCustomList: boolean) => {
-    let out = list;
-    if (selectedCategory === 'custom') {
-      if (!forCustomList) return [];
-      return searchQuery.trim() ? out.filter(z => {
-        const q = searchQuery.trim().toLowerCase();
-        return z.arabic.includes(searchQuery) || (z.transliteration && z.transliteration.toLowerCase().includes(q)) || (z.translation && z.translation.toLowerCase().includes(q));
-      }) : out;
-    }
-    if (selectedCategory) {
-      out = out.filter(z => (z.category || 'general') === selectedCategory);
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      out = out.filter(
-        z =>
-          z.arabic.includes(searchQuery) ||
-          (z.transliteration && z.transliteration.toLowerCase().includes(q)) ||
-          (z.translation && z.translation.toLowerCase().includes(q))
-      );
-    }
-    return out;
-  };
-
-  const filteredAzkar = filterZikrs(AZKAAR, false);
-  const filteredCustom = filterZikrs(customZikrs, true);
+  const allBuiltIn = AZKAAR;
+  const allZikrs = [...allBuiltIn, ...customZikrs];
 
   const addCustomZikr = async () => {
     if (!newZikr.arabic || !newZikr.translation) {
@@ -234,270 +208,116 @@ const ModernHomeScreen: React.FC = () => {
     );
   };
 
-  const ZikrCard: React.FC<{ zikr: ZikrItem; isCustom?: boolean }> = ({
+  const ZikrRow: React.FC<{ zikr: ZikrItem; isCustom?: boolean; isLast?: boolean }> = ({
     zikr,
     isCustom = false,
+    isLast = false,
   }) => (
-    <Card
-      variant="elevated"
-      padding="medium"
-      style={[styles.card, { backgroundColor: theme.colors.surface }]}
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => handleZikrPress(zikr)}
+      style={[
+        styles.zikrRow,
+        !isLast && { borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+      ]}
     >
-      <TouchableOpacity
-        onPress={() => handleZikrPress(zikr)}
-        activeOpacity={0.8}
-        style={styles.cardTouchable}
-      >
-        <View style={styles.cardHeader}>
-          {isCustom ? (
-            <CrescentIcon color={theme.colors.accent} />
-          ) : (
-            <BookQuranIcon color={theme.colors.accent} />
-          )}
-          <View style={styles.cardTitleContainer}>
-            <Text style={[styles.cardCategory, { color: theme.colors.accent }]}>
-              {isCustom ? 'Personal' : (ZIKR_CATEGORIES.find(c => c.key === (zikr.category || 'general'))?.label || 'Dhikr')}
-            </Text>
-            {zikr.isSunnah && (
-              <View style={[styles.sunnahBadge, { backgroundColor: `${theme.colors.accent}25` }]}>
-                <Text style={[styles.sunnahBadgeText, { color: theme.colors.accent }]}>Sunnah</Text>
-              </View>
-            )}
-            <IslamicStarIcon size={16} color={theme.colors.accent} />
-          </View>
-          <View style={styles.cardActions}>
-            <View
-              style={[
-                styles.countBadge,
-                { backgroundColor: `${theme.colors.accent}20` },
-              ]}
-            >
-              <Text style={[styles.countText, { color: theme.colors.accent }]}>
-                {zikr.recommendedCount}
-              </Text>
-            </View>
-            {isCustom && (
-              <View style={styles.customActions}>
-                <TouchableOpacity
-                  onPress={() => editCustomZikr(zikr)}
-                  style={styles.actionButton}
-                >
-                  <Gear size={16} color={theme.colors.primary} weight="bold" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => deleteCustomZikr(zikr.id)}
-                  style={styles.actionButton}
-                >
-                  <X size={16} color={theme.colors.error} weight="bold" />
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
+      <View style={[styles.zikrRowIcon, { backgroundColor: isCustom ? theme.colors.accent + '22' : theme.colors.primary + '18' }]}>
+        {isCustom ? <CrescentIcon size={22} color={theme.colors.accent} /> : <BookQuranIcon size={22} color={theme.colors.primary} />}
+      </View>
+      <View style={styles.zikrRowContent}>
+        <Text style={[styles.zikrRowArabic, { color: theme.colors.text }]} numberOfLines={2}>
+          {zikr.arabic}
+        </Text>
+        <Text style={[styles.zikrRowTranslation, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+          {zikr.translation}
+        </Text>
+      </View>
+      <View style={styles.zikrRowRight}>
+        <View style={[styles.zikrCountPill, { backgroundColor: theme.colors.primary + '18' }]}>
+          <Text style={[styles.zikrCountText, { color: theme.colors.primary }]}>{zikr.recommendedCount}</Text>
         </View>
-
-        <View style={styles.cardContent}>
-          <Text style={[styles.arabicText, { color: theme.colors.text }]}>
-            {zikr.arabic}
-          </Text>
-          {zikr.transliteration && (
-            <Text
-              style={[
-                styles.transliterationText,
-                { color: theme.colors.accent },
-              ]}
-            >
-              {zikr.transliteration}
-            </Text>
-          )}
-          <Text
-            style={[styles.translationText, { color: theme.colors.textSecondary }]}
-          >
-            {zikr.translation}
-          </Text>
-
-          {zikr.reference && (
-            <Text
-              style={[
-                styles.referenceText,
-                { color: theme.colors.textTertiary },
-              ]}
-            >
-              {zikr.reference}
-            </Text>
-          )}
-        </View>
-      </TouchableOpacity>
-    </Card>
+        {isCustom && (
+          <View style={styles.zikrRowActions}>
+            <TouchableOpacity onPress={() => editCustomZikr(zikr)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={styles.zikrRowActionBtn}>
+              <Gear size={18} color={theme.colors.primary} weight="bold" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => deleteCustomZikr(zikr.id)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={styles.zikrRowActionBtn}>
+              <X size={18} color={theme.colors.error} weight="bold" />
+            </TouchableOpacity>
+          </View>
+        )}
+        {!isCustom && <CaretRight size={20} color={theme.colors.textTertiary} weight="bold" />}
+      </View>
+    </TouchableOpacity>
   );
+
+  const recentIds = new Set(recentZikrs.map(z => z.id));
+  const restBuiltIn = allBuiltIn.filter(z => !recentIds.has(z.id));
+  const displayList: { zikr: ZikrItem; isCustom: boolean }[] = [
+    ...recentZikrs.slice(0, 6).map(zikr => ({ zikr, isCustom: customZikrs.some(c => c.id === zikr.id) })),
+    ...restBuiltIn.map(zikr => ({ zikr, isCustom: false })),
+    ...customZikrs.map(zikr => ({ zikr, isCustom: true })),
+  ];
 
   return (
     <ScreenWrapper withPadding={false}>
-      {/* Modern Header */}
       <LinearGradient
-        colors={[
-          theme.colors.primary,
-          theme.colors.secondary,
-          theme.colors.tertiary,
-        ]}
-        style={[styles.header, { paddingTop: insets.top + 15 }]}
+        colors={[theme.colors.primary, theme.colors.secondary]}
+        style={[styles.header, { paddingTop: insets.top + 16 }]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
         <View style={styles.headerContent}>
           <View style={styles.headerText}>
             <Text style={[styles.headerTitle, { color: theme.colors.surface }]}>
-              Digital Tasbih
+              Tap Tasbeeh
+            </Text>
+            <Text style={[styles.headerSubtitle, { color: 'rgba(255,255,255,0.85)' }]}>
+              Choose a remembrance
             </Text>
           </View>
         </View>
-
-        {/* Modern Islamic Pattern Border */}
         <View style={styles.headerBorder}>
-          {[...Array(8)].map((_, i) => (
-            <IslamicStarIcon key={i} size={12} color={theme.colors.accent} />
+          {[...Array(6)].map((_, i) => (
+            <IslamicStarIcon key={i} size={10} color={theme.colors.accent} />
           ))}
         </View>
       </LinearGradient>
 
       <ScrollView
-        style={[
-          styles.scrollView,
-          { backgroundColor: theme.colors.background },
-        ]}
+        style={[styles.scrollView, { backgroundColor: theme.colors.background }]}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Search */}
-        <View style={[styles.searchRow, { backgroundColor: theme.colors.background }]}>
-          <View style={[styles.searchBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-            <MagnifyingGlass size={20} color={theme.colors.textTertiary} />
-            <TextInput
-              style={[styles.searchInput, { color: theme.colors.text }]}
-              placeholder="Search dhikr..."
-              placeholderTextColor={theme.colors.textTertiary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
-        </View>
-
-        {/* Category chips */}
-        <View style={styles.categoryRow}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryChips}>
-            {ZIKR_CATEGORIES.map(c => (
-              <TouchableOpacity
-                key={c.key}
-                onPress={() => setSelectedCategory(selectedCategory === c.key ? null : c.key)}
-                style={[
-                  styles.categoryChip,
-                  {
-                    backgroundColor: selectedCategory === c.key ? theme.colors.primary : theme.colors.surface,
-                    borderColor: theme.colors.border,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.categoryChipText,
-                    { color: selectedCategory === c.key ? theme.colors.surface : theme.colors.text },
-                  ]}
-                >
-                  {c.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Recently used */}
-        {recentZikrs.length > 0 && !searchQuery && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <ClockCounterClockwise size={22} color={theme.colors.primary} />
-              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                Recently used
-              </Text>
-              <View style={[styles.sectionDivider, { backgroundColor: theme.colors.accent }]} />
-            </View>
-            {recentZikrs.slice(0, 5).map(zikr => (
-              <ZikrCard key={`recent-${zikr.id}`} zikr={zikr} isCustom={customZikrs.some(c => c.id === zikr.id)} />
-            ))}
+        {recentZikrs.length > 0 && (
+          <View style={styles.recentStrip}>
+            <ClockCounterClockwise size={16} color={theme.colors.primary} weight="duotone" />
+            <Text style={[styles.recentStripText, { color: theme.colors.textSecondary }]}>Recent</Text>
           </View>
         )}
 
-        {/* Sacred Remembrance */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <BookQuranIcon size={24} color={theme.colors.primary} />
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              Sacred Remembrance
-            </Text>
-            <View style={[styles.sectionDivider, { backgroundColor: theme.colors.accent }]} />
-          </View>
-
-          {filteredAzkar.length === 0 ? (
-            <Card variant="outlined" padding="medium" style={[styles.loadingCard, { backgroundColor: theme.colors.surface }]}>
-              <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
-                No dhikr in this category.
-              </Text>
-            </Card>
+        <Card variant="elevated" padding="none" style={[styles.zikrListCard, { backgroundColor: theme.colors.surface }]}>
+          {loading ? (
+            <View style={styles.zikrListEmpty}>
+              <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>Loading...</Text>
+            </View>
+          ) : displayList.length === 0 ? (
+            <View style={styles.zikrListEmpty}>
+              <BookQuranIcon size={40} color={theme.colors.border} />
+              <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>No dhikr yet</Text>
+              <Text style={[styles.emptySubtitle, { color: theme.colors.textSecondary }]}>Tap + to add your first</Text>
+            </View>
           ) : (
-            filteredAzkar.map(zikr => <ZikrCard key={zikr.id} zikr={zikr} />)
+            displayList.map(({ zikr, isCustom }, index) => (
+              <ZikrRow
+                key={isCustom ? `c-${zikr.id}` : zikr.id}
+                zikr={zikr}
+                isCustom={isCustom}
+                isLast={index === displayList.length - 1}
+              />
+            ))
           )}
-        </View>
-
-        {/* Custom Dhikr Section */}
-        {loading ? (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <CrescentIcon color={theme.colors.primary} />
-              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                Personal Collection
-              </Text>
-              <View
-                style={[
-                  styles.sectionDivider,
-                  { backgroundColor: theme.colors.accent },
-                ]}
-              />
-            </View>
-            <Card
-              variant="outlined"
-              padding="medium"
-              style={[styles.loadingCard, { backgroundColor: theme.colors.surface }]}
-            >
-              <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
-                Loading your personal dhikrs...
-              </Text>
-            </Card>
-          </View>
-        ) : customZikrs.length > 0 ? (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <CrescentIcon color={theme.colors.primary} />
-              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                Personal Collection
-              </Text>
-              <View
-                style={[
-                  styles.sectionDivider,
-                  { backgroundColor: theme.colors.accent },
-                ]}
-              />
-            </View>
-
-            {(filteredCustom.length === 0 ? (
-              <Card variant="outlined" padding="medium" style={[styles.loadingCard, { backgroundColor: theme.colors.surface }]}>
-                <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
-                  No matching personal dhikr.
-                </Text>
-              </Card>
-            ) : (
-              filteredCustom.map(zikr => (
-                <ZikrCard key={zikr.id} zikr={zikr} isCustom={true} />
-              ))
-            ))}
-          </View>
-        ) : null}
+        </Card>
 
         <View style={styles.bottomPadding} />
       </ScrollView>
@@ -909,189 +729,128 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // Header Styles
   header: {
-    paddingTop: 15,
-    paddingBottom: 10,
+    paddingBottom: 14,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    elevation: 12,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
   },
   headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    paddingTop: 30,
+    paddingVertical: 8,
   },
-  headerText: {
-    flex: 1,
-    marginHorizontal: 15,
-  },
+  headerText: {},
   headerTitle: {
-    marginBottom: 4,
-    fontSize: 30,
+    fontSize: 26,
+    fontFamily: 'Poppins-Bold',
   },
-  headerSubtitle: {},
+  headerSubtitle: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    marginTop: 4,
+  },
   headerBorder: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
+    justifyContent: 'center',
+    gap: 12,
+    paddingVertical: 6,
   },
 
-  // Content Styles
   scrollView: {
     flex: 1,
   },
-  searchRow: {
+  scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: 20,
   },
-  searchBox: {
+  recentStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    height: 46,
-    gap: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    fontFamily: 'Poppins-Regular',
-    paddingVertical: 0,
-  },
-  categoryRow: {
-    paddingVertical: 8,
-    paddingLeft: 16,
-  },
-  categoryChips: {
-    flexDirection: 'row',
     gap: 8,
-    paddingRight: 16,
-  },
-  categoryChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  categoryChipText: {
-    fontSize: 13,
-    fontFamily: 'Poppins-Medium',
-  },
-  section: {
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  sectionTitle: {
-    ...TYPOGRAPHY.h3,
-    marginLeft: 10,
-    flex: 1,
-  },
-  sectionDivider: {
-    height: 2,
-    flex: 1,
-    borderRadius: 1,
-  },
-
-  // Card Styles
-  card: {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-  },
-  cardTouchable: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  cardGradient: {
-    borderRadius: 16,
-    padding: 20,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 12,
+    paddingLeft: 4,
   },
-  cardTitleContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 10,
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  sunnahBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  sunnahBadgeText: {
-    fontSize: 11,
+  recentStripText: {
+    fontSize: 12,
     fontFamily: 'Poppins-SemiBold',
+    letterSpacing: 0.5,
   },
-  cardCategory: {
-    ...TYPOGRAPHY.caption,
-    fontFamily: FONT_WEIGHTS.semiBold.primary,
-    marginRight: 6,
+  zikrListCard: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  countBadge: {
+  zikrListEmpty: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontFamily: 'Poppins-SemiBold',
+    marginTop: 12,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    marginTop: 4,
+  },
+  zikrRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  zikrRowIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  zikrRowContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+  zikrRowArabic: {
+    fontSize: 18,
+    fontFamily: 'Amiri-Bold',
+    lineHeight: 28,
+  },
+  zikrRowTranslation: {
+    fontSize: 13,
+    fontFamily: 'Poppins-Regular',
+    marginTop: 4,
+  },
+  zikrRowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  zikrCountPill: {
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 10,
   },
-  countText: {
-    ...TYPOGRAPHY.caption,
-    fontFamily: FONT_WEIGHTS.bold.primary,
-    marginLeft: 4,
+  zikrCountText: {
+    fontSize: 14,
+    fontFamily: 'Poppins-SemiBold',
   },
-  cardContent: {
-    alignItems: 'center',
+  zikrRowActions: {
+    flexDirection: 'row',
+    gap: 4,
   },
-  arabicText: {
-    ...TYPOGRAPHY.arabicLarge,
-    fontSize: 22,
-    textAlign: 'center',
-    marginBottom: 8,
-    lineHeight: 52,
-  },
-  transliterationText: {
-    ...TYPOGRAPHY.bodySmall,
-    textAlign: 'center',
-    marginBottom: 6,
-    fontStyle: 'italic',
-  },
-  translationText: {
-    ...TYPOGRAPHY.bodySmall,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  referenceText: {
-    ...TYPOGRAPHY.caption,
-    fontSize: 11,
-    textAlign: 'center',
-    fontStyle: 'italic',
+  zikrRowActionBtn: {
+    padding: 6,
   },
 
   // Floating Action Button
@@ -1204,14 +963,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  loadingCard: {
-    borderRadius: 12,
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
   loadingText: {
     fontSize: 14,
-    fontStyle: 'italic',
+    fontFamily: 'Poppins-Regular',
   },
 });
 
