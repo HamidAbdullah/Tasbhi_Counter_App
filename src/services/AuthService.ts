@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
@@ -8,11 +9,56 @@ class AuthService {
 
     initialize() {
         try {
-            GoogleSignin.configure({
-                // Removed offlineAccess as it requires a webClientID for Android
-            });
+            if (Platform.OS === 'android') {
+                // Required for Firebase Auth: use the Web OAuth client ID (from Firebase Console →
+                // Project settings → Your apps → Web client ID), NOT the Android client ID.
+                // Without this, sign-in throws DEVELOPER_ERROR in debug/release.
+                const webClientId = '390113223871-i16ujhliik66kfg39s1st3ao25lh8k29.apps.googleusercontent.com';
+                GoogleSignin.configure({
+                    webClientId,
+                });
+            }
         } catch (error) {
             console.error('GoogleSignin configure error:', error);
+        }
+    }
+
+    /** Guest: continue without signing in. No Firebase user. */
+    async signInAsGuest(): Promise<null> {
+        return Promise.resolve(null);
+    }
+
+    /** Apple Sign-In (iOS only). Requires @invertase/react-native-apple-authentication + Sign in with Apple capability. */
+    async signInWithApple(): Promise<FirebaseAuthTypes.User> {
+        if (Platform.OS !== 'ios') {
+            throw new Error('Apple Sign-In is only available on iOS.');
+        }
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const appleAuth = require('@invertase/react-native-apple-authentication').default;
+            const rawNonce = Math.random().toString(36).slice(2);
+            const request = {
+                requestedOperation: appleAuth.Operation.LOGIN,
+                requestedScopes: [appleAuth.AppleAuthRequestScope.EMAIL, appleAuth.AppleAuthRequestScope.FULL_NAME],
+                nonce: rawNonce,
+            };
+            const { identityToken } = await appleAuth.performRequest(request);
+
+            if (!identityToken) {
+                throw new Error('Apple Sign-In failed: No identity token.');
+            }
+
+            const credential = auth.AppleAuthProvider.credential(identityToken, rawNonce);
+            const userCredential = await auth().signInWithCredential(credential);
+            return userCredential.user;
+        } catch (e: any) {
+            if (e?.code === 'ERR_REQUEST_CANCELED') {
+                throw new Error('Sign-in was cancelled.');
+            }
+            if (e?.code === 'E_APPLE_AUTH_NOT_SUPPORTED' || (e?.message && (e.message.includes('require') || e.message.includes('Unable to resolve')))) {
+                throw new Error('Apple Sign-In is not configured. Add @invertase/react-native-apple-authentication and enable Sign in with Apple in Xcode.');
+            }
+            throw this.handleError(e);
         }
     }
 
@@ -49,12 +95,13 @@ class AuthService {
         }
     }
 
-    // Google Sign In
+    // Google Sign In (Android; on iOS we use Apple)
     async signInWithGoogle() {
+        if (Platform.OS !== 'android') {
+            throw new Error('Use Apple Sign-In on this device.');
+        }
         try {
-            // Check if your device supports Google Play
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-            // Get the users ID token
             const response = await GoogleSignin.signIn();
             const idToken = response.data?.idToken;
 
@@ -62,10 +109,7 @@ class AuthService {
                 throw new Error('Google Sign-In failed: No ID token received');
             }
 
-            // Create a Google credential with the token
             const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-
-            // Sign-in the user with the credential
             const userCredential = await auth().signInWithCredential(googleCredential);
             return userCredential.user;
         } catch (error: any) {

@@ -230,11 +230,11 @@ const ModernTapTasbih: React.FC<ModernTapTasbihProps> = ({
 
   const getButtonColors = () => {
     if (isCompleted) {
-      return [theme.colors.accent, theme.colors.warning, '#FFA500'];
+      return [theme.colors.accent, '#D4AF37', '#b8860b'];
     } else if (count > 0) {
       return [theme.colors.primary, theme.colors.secondary, theme.colors.tertiary];
     } else {
-      return [theme.colors.background, theme.colors.surface, theme.colors.card];
+      return [theme.colors.primary, theme.colors.secondary];
     }
   };
 
@@ -267,8 +267,8 @@ const ModernTapTasbih: React.FC<ModernTapTasbihProps> = ({
         <LinearGradient
           colors={
             isCompleted
-              ? [`${theme.colors.accent}40`, 'transparent']
-              : [`${theme.colors.primary}40`, 'transparent']
+              ? [`${theme.colors.accent}50`, `${theme.colors.accent}15`, 'transparent']
+              : [`${theme.colors.primary}35`, 'transparent']
           }
           style={styles.glowGradient}
         />
@@ -305,7 +305,7 @@ const ModernTapTasbih: React.FC<ModernTapTasbihProps> = ({
               <CircularProgress
                 progress={progress}
                 size={80}
-                strokeWidth={4}
+                strokeWidth={5}
                 variant="accent"
               >
                 <Text style={[styles.countNumber, { color: theme.colors.surface }]}>
@@ -313,11 +313,11 @@ const ModernTapTasbih: React.FC<ModernTapTasbihProps> = ({
                 </Text>
               </CircularProgress>
 
-              {/* Completion indicator */}
+              {/* Completion: gentle golden shimmer */}
               {isCompleted && (
                 <View style={[styles.completionBadge, { backgroundColor: theme.colors.accent }]}>
                   <Text style={[styles.completionText, { color: theme.colors.surface }]}>
-                    Completed ✨
+                    Completed
                   </Text>
                 </View>
               )}

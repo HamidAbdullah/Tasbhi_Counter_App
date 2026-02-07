@@ -18,20 +18,20 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import {
-  House,
   Plus,
   ChartBar,
   Gear,
-  Sun,
   Moon,
   BookOpen,
   Star,
   CheckCircle,
   X,
+  ClockCounterClockwise,
+  MagnifyingGlass,
 } from 'phosphor-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ZikrItem } from '../../types';
-import { AZKAAR } from '../../constants/AzkarData';
+import { AZKAAR, ZIKR_CATEGORIES } from '../../constants/AzkarData';
 import { RootStackParamList, TabParamList } from '../../types';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp } from '@react-navigation/native';
@@ -66,6 +66,9 @@ const ModernHomeScreen: React.FC = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingZikr, setEditingZikr] = useState<ZikrItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [recentZikrs, setRecentZikrs] = useState<ZikrItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [fabAnimation] = useState(new Animated.Value(1));
   const [newZikr, setNewZikr] = useState({
     arabic: '',
@@ -90,8 +93,16 @@ const ModernHomeScreen: React.FC = () => {
   const loadCustomZikrs = async () => {
     try {
       setLoading(true);
-      const savedZikrs = await StorageUtils.getCustomZikrs();
+      const [savedZikrs, recentIds] = await Promise.all([
+        StorageUtils.getCustomZikrs(),
+        StorageUtils.getRecentZikrIds(),
+      ]);
       setCustomZikrs(savedZikrs);
+      const allZikrs = [...AZKAAR, ...savedZikrs];
+      const recent = recentIds
+        .map(id => allZikrs.find(z => z.id === id))
+        .filter((z): z is ZikrItem => z != null);
+      setRecentZikrs(recent);
     } catch (error) {
       console.error('Error loading custom zikrs:', error);
     } finally {
@@ -100,8 +111,36 @@ const ModernHomeScreen: React.FC = () => {
   };
 
   const handleZikrPress = (zikr: ZikrItem) => {
+    StorageUtils.addRecentZikr(zikr.id);
     navigation.navigate('Counter', { zikr });
   };
+
+  const filterZikrs = (list: ZikrItem[], forCustomList: boolean) => {
+    let out = list;
+    if (selectedCategory === 'custom') {
+      if (!forCustomList) return [];
+      return searchQuery.trim() ? out.filter(z => {
+        const q = searchQuery.trim().toLowerCase();
+        return z.arabic.includes(searchQuery) || (z.transliteration && z.transliteration.toLowerCase().includes(q)) || (z.translation && z.translation.toLowerCase().includes(q));
+      }) : out;
+    }
+    if (selectedCategory) {
+      out = out.filter(z => (z.category || 'general') === selectedCategory);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      out = out.filter(
+        z =>
+          z.arabic.includes(searchQuery) ||
+          (z.transliteration && z.transliteration.toLowerCase().includes(q)) ||
+          (z.translation && z.translation.toLowerCase().includes(q))
+      );
+    }
+    return out;
+  };
+
+  const filteredAzkar = filterZikrs(AZKAAR, false);
+  const filteredCustom = filterZikrs(customZikrs, true);
 
   const addCustomZikr = async () => {
     if (!newZikr.arabic || !newZikr.translation) {
@@ -218,8 +257,13 @@ const ModernHomeScreen: React.FC = () => {
           )}
           <View style={styles.cardTitleContainer}>
             <Text style={[styles.cardCategory, { color: theme.colors.accent }]}>
-              {isCustom ? 'Personal' : 'Traditional'}
+              {isCustom ? 'Personal' : (ZIKR_CATEGORIES.find(c => c.key === (zikr.category || 'general'))?.label || 'Dhikr')}
             </Text>
+            {zikr.isSunnah && (
+              <View style={[styles.sunnahBadge, { backgroundColor: `${theme.colors.accent}25` }]}>
+                <Text style={[styles.sunnahBadgeText, { color: theme.colors.accent }]}>Sunnah</Text>
+              </View>
+            )}
             <IslamicStarIcon size={16} color={theme.colors.accent} />
           </View>
           <View style={styles.cardActions}>
@@ -229,7 +273,6 @@ const ModernHomeScreen: React.FC = () => {
                 { backgroundColor: `${theme.colors.accent}20` },
               ]}
             >
-              <CrescentIcon size={14} color={theme.colors.accent} />
               <Text style={[styles.countText, { color: theme.colors.accent }]}>
                 {zikr.recommendedCount}
               </Text>
@@ -268,7 +311,7 @@ const ModernHomeScreen: React.FC = () => {
             </Text>
           )}
           <Text
-            style={[styles.translationText, { color: theme.colors.surface }]}
+            style={[styles.translationText, { color: theme.colors.textSecondary }]}
           >
             {zikr.translation}
           </Text>
@@ -277,7 +320,7 @@ const ModernHomeScreen: React.FC = () => {
             <Text
               style={[
                 styles.referenceText,
-                { color: `${theme.colors.surface}80` },
+                { color: theme.colors.textTertiary },
               ]}
             >
               {zikr.reference}
@@ -338,24 +381,83 @@ const ModernHomeScreen: React.FC = () => {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Traditional Dhikr Section */}
+        {/* Search */}
+        <View style={[styles.searchRow, { backgroundColor: theme.colors.background }]}>
+          <View style={[styles.searchBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+            <MagnifyingGlass size={20} color={theme.colors.textTertiary} />
+            <TextInput
+              style={[styles.searchInput, { color: theme.colors.text }]}
+              placeholder="Search dhikr..."
+              placeholderTextColor={theme.colors.textTertiary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+        </View>
+
+        {/* Category chips */}
+        <View style={styles.categoryRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryChips}>
+            {ZIKR_CATEGORIES.map(c => (
+              <TouchableOpacity
+                key={c.key}
+                onPress={() => setSelectedCategory(selectedCategory === c.key ? null : c.key)}
+                style={[
+                  styles.categoryChip,
+                  {
+                    backgroundColor: selectedCategory === c.key ? theme.colors.primary : theme.colors.surface,
+                    borderColor: theme.colors.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.categoryChipText,
+                    { color: selectedCategory === c.key ? theme.colors.surface : theme.colors.text },
+                  ]}
+                >
+                  {c.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Recently used */}
+        {recentZikrs.length > 0 && !searchQuery && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ClockCounterClockwise size={22} color={theme.colors.primary} />
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                Recently used
+              </Text>
+              <View style={[styles.sectionDivider, { backgroundColor: theme.colors.accent }]} />
+            </View>
+            {recentZikrs.slice(0, 5).map(zikr => (
+              <ZikrCard key={`recent-${zikr.id}`} zikr={zikr} isCustom={customZikrs.some(c => c.id === zikr.id)} />
+            ))}
+          </View>
+        )}
+
+        {/* Sacred Remembrance */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <BookQuranIcon size={24} color={theme.colors.primary} />
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
               Sacred Remembrance
             </Text>
-            <View
-              style={[
-                styles.sectionDivider,
-                { backgroundColor: theme.colors.accent },
-              ]}
-            />
+            <View style={[styles.sectionDivider, { backgroundColor: theme.colors.accent }]} />
           </View>
 
-          {AZKAAR.map(zikr => (
-            <ZikrCard key={zikr.id} zikr={zikr} />
-          ))}
+          {filteredAzkar.length === 0 ? (
+            <Card variant="outlined" padding="medium" style={[styles.loadingCard, { backgroundColor: theme.colors.surface }]}>
+              <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+                No dhikr in this category.
+              </Text>
+            </Card>
+          ) : (
+            filteredAzkar.map(zikr => <ZikrCard key={zikr.id} zikr={zikr} />)
+          )}
         </View>
 
         {/* Custom Dhikr Section */}
@@ -398,8 +500,16 @@ const ModernHomeScreen: React.FC = () => {
               />
             </View>
 
-            {customZikrs.map(zikr => (
-              <ZikrCard key={zikr.id} zikr={zikr} isCustom={true} />
+            {(filteredCustom.length === 0 ? (
+              <Card variant="outlined" padding="medium" style={[styles.loadingCard, { backgroundColor: theme.colors.surface }]}>
+                <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+                  No matching personal dhikr.
+                </Text>
+              </Card>
+            ) : (
+              filteredCustom.map(zikr => (
+                <ZikrCard key={zikr.id} zikr={zikr} isCustom={true} />
+              ))
             ))}
           </View>
         ) : null}
@@ -866,6 +976,45 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  searchRow: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 46,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: 'Poppins-Regular',
+    paddingVertical: 0,
+  },
+  categoryRow: {
+    paddingVertical: 8,
+    paddingLeft: 16,
+  },
+  categoryChips: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingRight: 16,
+  },
+  categoryChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  categoryChipText: {
+    fontSize: 13,
+    fontFamily: 'Poppins-Medium',
+  },
   section: {
     paddingHorizontal: 16,
     paddingVertical: 20,
@@ -915,6 +1064,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: 10,
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  sunnahBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  sunnahBadgeText: {
+    fontSize: 11,
+    fontFamily: 'Poppins-SemiBold',
   },
   cardCategory: {
     ...TYPOGRAPHY.caption,

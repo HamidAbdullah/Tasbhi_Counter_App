@@ -139,26 +139,39 @@ export interface Theme {
   };
 }
 
+// Islamic premium palette
+export const ISLAMIC_COLORS = {
+  primary: '#0E6F64',       // Emerald Islamic Green
+  secondary: '#0B1C2D',     // Midnight Blue (night prayer)
+  gold: '#C8A24D',          // Premium subtle gold
+  bgLight: '#F6F9F7',
+  bgDark: '#07141F',
+  textDark: '#0E1B1A',
+  textLight: '#E6F2EF',
+} as const;
+
+// Light theme — calm, spiritual, minimal
 export const lightTheme: Theme = {
   colors: {
-    primary: '#2d5a27',
-    secondary: '#4a7c59',
-    tertiary: '#6ba16e',
-    background: '#f8fafc',
+    primary: ISLAMIC_COLORS.primary,
+    secondary: ISLAMIC_COLORS.secondary,
+    tertiary: '#0d5c54',
+    background: ISLAMIC_COLORS.bgLight,
     surface: '#ffffff',
     card: '#ffffff',
-    text: '#1a202c',
-    textSecondary: '#4a5568',
-    textTertiary: '#718096',
-    border: '#e2e8f0',
-    error: '#e53e3e',
-    warning: '#ed8936',
-    success: '#38a169',
-    info: '#3182ce',
-    accent: '#d69e2e',
+    text: ISLAMIC_COLORS.textDark,
+    textSecondary: '#1a3d38',
+    textTertiary: '#4a7c75',
+    border: '#c5e0dc',
+    error: '#dc2626',
+    warning: '#ea580c',
+    success: ISLAMIC_COLORS.primary,
+    info: '#0284c7',
+    accent: ISLAMIC_COLORS.gold,
     shadow: '#000000',
     overlay: 'rgba(0, 0, 0, 0.4)',
   },
+
   spacing: {
     xs: 4,
     sm: 8,
@@ -167,6 +180,7 @@ export const lightTheme: Theme = {
     xl: 32,
     xxl: 48,
   },
+  
   borderRadius: {
     sm: 4,
     md: 8,
@@ -174,12 +188,14 @@ export const lightTheme: Theme = {
     xl: 16,
     full: 999,
   },
+  
   typography: {
     h1: {
       fontSize: 32,
       fontFamily: 'Poppins-Bold',
       lineHeight: 40,
     },
+
     h2: {
       fontSize: 24,
       fontFamily: 'Poppins-Bold',
@@ -280,23 +296,24 @@ export const lightTheme: Theme = {
   },
 };
 
+// Dark theme — night prayer vibe, easy on the eyes
 export const darkTheme: Theme = {
   colors: {
-    primary: '#68d391',
-    secondary: '#9ae6b4',
-    tertiary: '#c6f6d5',
-    background: '#0d1117',
-    surface: '#161b22',
-    card: '#21262d',
-    text: '#f7fafc',
-    textSecondary: '#a0aec0',
-    textTertiary: '#718096',
-    border: '#2d3748',
-    error: '#fc8181',
-    warning: '#fbb6ce',
-    success: '#68d391',
-    info: '#63b3ed',
-    accent: '#f6e05e',
+    primary: '#11998a',
+    secondary: ISLAMIC_COLORS.secondary,
+    tertiary: '#0d5c54',
+    background: ISLAMIC_COLORS.bgDark,
+    surface: '#0f2432',
+    card: '#132f42',
+    text: ISLAMIC_COLORS.textLight,
+    textSecondary: '#9ec4be',
+    textTertiary: '#5a8a82',
+    border: '#1a3d4d',
+    error: '#f87171',
+    warning: '#fb923c',
+    success: '#11998a',
+    info: '#38bdf8',
+    accent: ISLAMIC_COLORS.gold,
     shadow: '#000000',
     overlay: 'rgba(0, 0, 0, 0.6)',
   },
@@ -423,9 +440,36 @@ export const darkTheme: Theme = {
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
-export const getTheme = (mode: ThemeMode, systemTheme: 'light' | 'dark'): Theme => {
-  if (mode === 'auto') {
-    return systemTheme === 'dark' ? darkTheme : lightTheme;
+// Ramadan theme: warmer gold-tinted accents
+export const ramadanLightTheme: Theme = {
+  ...lightTheme,
+  colors: {
+    ...lightTheme.colors,
+    primary: '#0d6b5c',
+    accent: '#D4AF37',
+    tertiary: '#b8860b',
+  },
+};
+
+export const ramadanDarkTheme: Theme = {
+  ...darkTheme,
+  colors: {
+    ...darkTheme.colors,
+    primary: '#0fa090',
+    accent: '#D4AF37',
+  },
+};
+
+export const getTheme = (
+  mode: ThemeMode,
+  systemTheme: 'light' | 'dark',
+  ramadanMode?: boolean
+): Theme => {
+  const base = mode === 'auto'
+    ? (systemTheme === 'dark' ? darkTheme : lightTheme)
+    : (mode === 'dark' ? darkTheme : lightTheme);
+  if (ramadanMode) {
+    return base === darkTheme ? ramadanDarkTheme : ramadanLightTheme;
   }
-  return mode === 'dark' ? darkTheme : lightTheme;
+  return base;
 };

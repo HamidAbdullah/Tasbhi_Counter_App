@@ -1,3 +1,5 @@
+export type ZikrCategory = 'morning' | 'evening' | 'afterSalah' | 'favorites' | 'custom' | 'general';
+
 export interface ZikrItem {
   id: number;
   arabic: string;
@@ -5,6 +7,8 @@ export interface ZikrItem {
   translation: string;
   reference: string;
   recommendedCount: number;
+  category?: ZikrCategory;
+  isSunnah?: boolean;
 }
 
 export interface CounterData {

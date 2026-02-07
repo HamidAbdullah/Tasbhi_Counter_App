@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "390113223871",
+    "project_id": "mariab-darood-app",
+    "storage_bucket": "mariab-darood-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:390113223871:android:788f7a84e87333ad9f920a",
+        "android_client_info": {
+          "package_name": "com.tasbihcounter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "390113223871-i16ujhliik66kfg39s1st3ao25lh8k29.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOvBqlCuxdCt4KaydbI9HU8c2LCboPfJ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "390113223871-i16ujhliik66kfg39s1st3ao25lh8k29.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

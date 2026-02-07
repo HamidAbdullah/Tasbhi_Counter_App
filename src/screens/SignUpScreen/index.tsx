@@ -21,6 +21,7 @@ import { EnvelopeSimple, Lock, User, GoogleLogo, ArrowLeft, ArrowRight } from 'p
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import AuthService from '../../services/AuthService';
+import { ISLAMIC_COLORS } from '../../theme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -50,13 +51,17 @@ const SignUpScreen: React.FC = () => {
         }
     };
 
-    const handleGoogleLogin = async () => {
+    const handleSocialSignIn = async () => {
         setGoogleLoading(true);
         try {
-            await AuthService.signInWithGoogle();
+            if (Platform.OS === 'ios') {
+                await AuthService.signInWithApple();
+            } else {
+                await AuthService.signInWithGoogle();
+            }
             navigation.navigate('MainTabs');
         } catch (error: any) {
-            Alert.alert('Google Sign-In Failed', error.message);
+            Alert.alert('Sign-In', error.message);
         } finally {
             setGoogleLoading(false);
         }
@@ -65,12 +70,12 @@ const SignUpScreen: React.FC = () => {
     return (
         <ScreenWrapper withPadding={false}>
             <LinearGradient
-                colors={[theme.colors.secondary, theme.colors.tertiary]}
-                style={styles.headerBackground}
+                colors={[ISLAMIC_COLORS.primary, ISLAMIC_COLORS.secondary]}
+                style={[styles.headerBackground, { paddingTop: insets.top }]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
             >
-                <View style={{ paddingTop: insets.top }}>
+                <View>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                         <ArrowLeft size={24} color="#FFF" weight="bold" />
                     </TouchableOpacity>
@@ -155,15 +160,24 @@ const SignUpScreen: React.FC = () => {
 
                         <TouchableOpacity
                             style={[styles.googleButton, { borderColor: theme.colors.border }]}
-                            onPress={handleGoogleLogin}
+                            onPress={handleSocialSignIn}
                             disabled={googleLoading}
                         >
                             {googleLoading ? (
                                 <ActivityIndicator color={theme.colors.text} />
                             ) : (
                                 <>
-                                    <GoogleLogo size={24} color="#DB4437" weight="bold" />
-                                    <Text style={[styles.googleButtonText, { color: theme.colors.text }]}>Sign Up with Google</Text>
+                                    {Platform.OS === 'ios' ? (
+                                        <>
+                                            <Text style={styles.appleLogo}></Text>
+                                            <Text style={[styles.googleButtonText, { color: theme.colors.text }]}>Continue with Apple</Text>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <GoogleLogo size={24} color="#DB4437" weight="bold" />
+                                            <Text style={[styles.googleButtonText, { color: theme.colors.text }]}>Sign Up with Google</Text>
+                                        </>
+                                    )}
                                 </>
                             )}
                         </TouchableOpacity>
@@ -296,6 +310,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 12,
+    },
+    appleLogo: {
+        fontSize: 18,
+        color: '#000',
     },
     googleButtonText: {
         fontSize: 16,

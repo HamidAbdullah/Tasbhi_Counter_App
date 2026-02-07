@@ -6,6 +6,8 @@ const CUSTOM_ZIKR_KEY = 'custom_zikr_data';
 const SETTINGS_KEY = 'app_settings';
 const DAILY_STATS_KEY = 'daily_stats';
 const STREAK_DATA_KEY = 'streak_data';
+const RECENT_ZIKRS_KEY = 'recent_zikr_ids';
+const MAX_RECENT_ZIKRS = 10;
 
 export const StorageUtils = {
   // Save counter data for a specific zikr
@@ -351,15 +353,38 @@ export const StorageUtils = {
     }
   },
 
+  // Recent zikrs (for "Recently used" section)
+  addRecentZikr: async (zikrId: number): Promise<void> => {
+    try {
+      const raw = await AsyncStorage.getItem(RECENT_ZIKRS_KEY);
+      const ids: number[] = raw ? JSON.parse(raw) : [];
+      const next = [zikrId, ...ids.filter(id => id !== zikrId)].slice(0, MAX_RECENT_ZIKRS);
+      await AsyncStorage.setItem(RECENT_ZIKRS_KEY, JSON.stringify(next));
+    } catch (error) {
+      console.error('Error saving recent zikr:', error);
+    }
+  },
+
+  getRecentZikrIds: async (): Promise<number[]> => {
+    try {
+      const raw = await AsyncStorage.getItem(RECENT_ZIKRS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (error) {
+      console.error('Error loading recent zikr ids:', error);
+      return [];
+    }
+  },
+
   // Clear all data
   clearAllData: async (): Promise<void> => {
     try {
       await AsyncStorage.multiRemove([
-        COUNTER_DATA_KEY, 
-        CUSTOM_ZIKR_KEY, 
-        SETTINGS_KEY, 
-        DAILY_STATS_KEY, 
-        STREAK_DATA_KEY
+        COUNTER_DATA_KEY,
+        CUSTOM_ZIKR_KEY,
+        SETTINGS_KEY,
+        DAILY_STATS_KEY,
+        STREAK_DATA_KEY,
+        RECENT_ZIKRS_KEY,
       ]);
     } catch (error) {
       console.error('Error clearing all data:', error);

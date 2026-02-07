@@ -1,13 +1,11 @@
-// Firebase configuration file
-// This file will be used when Firebase packages are installed
-
 export const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "your-app-id"
+  apiKey: "AIzaSyDGrdo2GKkXSl4LsAANT9R4iJU_XasiN50",
+  authDomain: "mariab-darood-app.firebaseapp.com",
+  projectId: "mariab-darood-app",
+  storageBucket: "mariab-darood-app.firebasestorage.app",
+  messagingSenderId: "390113223871",
+  appId: "1:390113223871:web:a9da12d11a194dae9f920a",
+  measurementId: "G-31R7PWKBTR",
 };
 
 // Firestore collections
@@ -154,7 +152,7 @@ export class FirebaseService {
     throw new Error('Firebase not configured yet');
   }
 
-  static subscribeToUserStats(userId: string, callback: (stats: UserDocument) => void) {
+  static subscribeToUserStats() {
     // Implementation will go here
     throw new Error('Firebase not configured yet');
   }

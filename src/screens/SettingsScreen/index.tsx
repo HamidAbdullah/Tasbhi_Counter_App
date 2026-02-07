@@ -25,6 +25,9 @@ import {
   ArrowCounterClockwise,
   Hash,
   Info,
+  MoonStars,
+  Bell,
+  Focus,
 } from 'phosphor-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -42,20 +45,20 @@ const BackIcon = ({ size = 24, color = '#ffffff' }) => (
   <ArrowLeft size={size} color={color} weight="bold" />
 );
 
-const SettingsIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <Gear size={size} color={color} weight="bold" />
+const SettingsIcon = ({ size = 24, color }: { size?: number; color?: string }) => (
+  <Gear size={size} color={color ?? '#0d9488'} weight="bold" />
 );
 
-const ThemeIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <Sun size={size} color={color} weight="bold" />
+const ThemeIcon = ({ size = 24, color }: { size?: number; color?: string }) => (
+  <Sun size={size} color={color ?? '#0d9488'} weight="bold" />
 );
 
-const SoundIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <SpeakerHigh size={size} color={color} weight="bold" />
+const SoundIcon = ({ size = 24, color }: { size?: number; color?: string }) => (
+  <SpeakerHigh size={size} color={color ?? '#0d9488'} weight="bold" />
 );
 
-const VibrationIcon = ({ size = 24, color = '#4a7c59' }) => (
-  <Vibrate size={size} color={color} weight="bold" />
+const VibrationIcon = ({ size = 24, color }: { size?: number; color?: string }) => (
+  <Vibrate size={size} color={color ?? '#0d9488'} weight="bold" />
 );
 
 const ResetIcon = ({ size = 24, color = '#d73527' }) => (
@@ -71,7 +74,17 @@ interface SettingsData {
 
 const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<SettingsScreenNavigationProp>();
-  const { theme } = useTheme();
+  const {
+    theme,
+    themeMode,
+    setThemeMode,
+    ramadanMode,
+    setRamadanMode,
+    focusMode,
+    setFocusMode,
+    dailyReminderEnabled,
+    setDailyReminderEnabled,
+  } = useTheme();
   const insets = useSafeAreaInsets();
 
   const [settings, setSettings] = useState<SettingsData>({
@@ -216,6 +229,95 @@ const SettingsScreen: React.FC = () => {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Spiritual & Focus */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            Spiritual & Focus
+          </Text>
+
+          <SettingItem
+            icon={<MoonStars size={24} color={theme.colors.accent} weight="bold" />}
+            title="Ramadan Mode"
+            subtitle="Warmer gold-tinted theme"
+          >
+            <Switch
+              value={ramadanMode}
+              onValueChange={setRamadanMode}
+              trackColor={{ false: theme.colors.border, true: theme.colors.accent }}
+              thumbColor={ramadanMode ? theme.colors.surface : theme.colors.textSecondary}
+            />
+          </SettingItem>
+
+          <SettingItem
+            icon={<Bell size={24} color={theme.colors.primary} weight="bold" />}
+            title="Daily Dhikr Reminder"
+            subtitle="Gentle reminder to remember Allah"
+          >
+            <Switch
+              value={dailyReminderEnabled}
+              onValueChange={setDailyReminderEnabled}
+              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+              thumbColor={dailyReminderEnabled ? theme.colors.surface : theme.colors.textSecondary}
+            />
+          </SettingItem>
+
+          <SettingItem
+            icon={<Focus size={24} color={theme.colors.primary} weight="bold" />}
+            title="Focus Mode"
+            subtitle="Hide extra UI during dhikr"
+          >
+            <Switch
+              value={focusMode}
+              onValueChange={setFocusMode}
+              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+              thumbColor={focusMode ? theme.colors.surface : theme.colors.textSecondary}
+            />
+          </SettingItem>
+        </View>
+
+        {/* Appearance Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            Appearance
+          </Text>
+          <Card variant="outlined" padding="medium" style={[styles.settingItem, { backgroundColor: theme.colors.surface }]}>
+            <View style={styles.settingHeader}>
+              <View style={[styles.settingIcon, { backgroundColor: theme.colors.primary + '20' }]}>
+                <ThemeIcon size={24} color={theme.colors.primary} />
+              </View>
+              <View style={styles.settingContent}>
+                <Text style={[styles.settingTitle, { color: theme.colors.text }]}>Theme</Text>
+                <Text style={[styles.settingSubtitle, { color: theme.colors.textSecondary }]}>
+                  Light, dark, or follow system
+                </Text>
+              </View>
+            </View>
+            <View style={styles.themeSelector}>
+              {(['light', 'dark', 'auto'] as const).map((mode) => (
+                <TouchableOpacity
+                  key={mode}
+                  onPress={() => setThemeMode(mode)}
+                  style={[
+                    styles.themeOption,
+                    {
+                      backgroundColor: themeMode === mode ? theme.colors.primary : theme.colors.border + '40',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.themeOptionText,
+                      { color: themeMode === mode ? theme.colors.surface : theme.colors.text },
+                    ]}
+                  >
+                    {mode === 'auto' ? 'Auto' : mode === 'light' ? 'Light' : 'Dark'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </Card>
+        </View>
+
         {/* Counter Settings Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
@@ -452,7 +554,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(74, 124, 89, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,

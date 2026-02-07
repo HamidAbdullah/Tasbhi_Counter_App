@@ -6,11 +6,11 @@ import {
   Animated,
   Dimensions,
   StatusBar,
+  Easing,
 } from 'react-native';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Star, Moon, Sun, Heart, Sparkle } from 'phosphor-react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,553 +19,164 @@ interface SplashScreenProps {
 }
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
 
-  // Animation values
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.3)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const bismillahAnim = useRef(new Animated.Value(0)).current;
-
-  // Floating elements animations
-  const star1Anim = useRef(new Animated.Value(0)).current;
-  const star2Anim = useRef(new Animated.Value(0)).current;
-  const star3Anim = useRef(new Animated.Value(0)).current;
-  const star4Anim = useRef(new Animated.Value(0)).current;
-  const star5Anim = useRef(new Animated.Value(0)).current;
-  const moonAnim = useRef(new Animated.Value(0)).current;
-  const sunAnim = useRef(new Animated.Value(0)).current;
-  const heartAnim = useRef(new Animated.Value(0)).current;
-  const sparkleAnim = useRef(new Animated.Value(0)).current;
+  const fadeIn = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0.6)).current;
+  const beadScale = useRef(new Animated.Value(0)).current;
+  const beadGlow = useRef(new Animated.Value(0.3)).current;
+  const bismillahOpacity = useRef(new Animated.Value(0)).current;
+  const progressWidth = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    startAnimations();
-  }, []);
+    const duration = 3200;
 
-  const startAnimations = () => {
-    // Main content animations
     Animated.parallel([
-      Animated.timing(fadeAnim, {
+      Animated.timing(fadeIn, {
         toValue: 1,
-        duration: 1000,
+        duration: 600,
         useNativeDriver: true,
       }),
-      Animated.spring(scaleAnim, {
+      Animated.spring(scale, {
         toValue: 1,
-        tension: 50,
-        friction: 8,
+        tension: 60,
+        friction: 10,
         useNativeDriver: true,
       }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 1200,
+      Animated.spring(beadScale, {
+        toValue: 1,
+        tension: 40,
+        friction: 6,
+        delay: 200,
         useNativeDriver: true,
       }),
     ]).start();
 
-    // Rotation animation for main logo
-    Animated.loop(
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 3000,
-        useNativeDriver: true,
-      })
-    ).start();
-
-    // Pulse animation
     Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1500,
+        Animated.timing(beadGlow, {
+          toValue: 0.7,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1500,
+        Animated.timing(beadGlow, {
+          toValue: 0.3,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
       ])
     ).start();
 
-    // Bismillah writing animation
-    Animated.timing(bismillahAnim, {
+    Animated.timing(bismillahOpacity, {
       toValue: 1,
-      duration: 2000,
-      delay: 1000,
+      duration: 1000,
+      delay: 700,
+      useNativeDriver: true,
+    }).start();
+
+    Animated.timing(progressWidth, {
+      toValue: 1,
+      duration: duration - 400,
+      delay: 400,
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       useNativeDriver: false,
     }).start();
 
-    // Floating elements animations
-    startFloatingAnimations();
+    const t = setTimeout(onAnimationFinish, duration);
+    return () => clearTimeout(t);
+  }, []);
 
-    // Navigate after animation completes
-    setTimeout(() => {
-      onAnimationFinish();
-    }, 4000);
-  };
-
-  const startFloatingAnimations = () => {
-    // Stars floating animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(star1Anim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(star1Anim, {
-          toValue: 0,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(star2Anim, {
-          toValue: 1,
-          duration: 2500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(star2Anim, {
-          toValue: 0,
-          duration: 2500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(star3Anim, {
-          toValue: 1,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(star3Anim, {
-          toValue: 0,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(star4Anim, {
-          toValue: 1,
-          duration: 2200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(star4Anim, {
-          toValue: 0,
-          duration: 2200,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(star5Anim, {
-          toValue: 1,
-          duration: 2800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(star5Anim, {
-          toValue: 0,
-          duration: 2800,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    // Moon and Sun floating
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(moonAnim, {
-          toValue: 1,
-          duration: 4000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(moonAnim, {
-          toValue: 0,
-          duration: 4000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(sunAnim, {
-          toValue: 1,
-          duration: 3500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(sunAnim, {
-          toValue: 0,
-          duration: 3500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    // Heart and Sparkle animations
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(heartAnim, {
-          toValue: 1,
-          duration: 2600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(heartAnim, {
-          toValue: 0,
-          duration: 2600,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(sparkleAnim, {
-          toValue: 1,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(sparkleAnim, {
-          toValue: 0,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  };
-
-  const rotateInterpolate = rotateAnim.interpolate({
+  const progressInterpolate = progressWidth.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
+    outputRange: ['0%', '100%'],
   });
 
-  const star1TranslateY = star1Anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -20],
-  });
+  const splashGradient = isDark
+    ? [theme.colors.background, theme.colors.surface, theme.colors.primary]
+    : [theme.colors.primary, theme.colors.secondary, theme.colors.tertiary];
 
-  const star2TranslateY = star2Anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -15],
-  });
-
-  const star3TranslateY = star3Anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -25],
-  });
-
-  const moonTranslateY = moonAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -30],
-  });
-
-  const sunTranslateY = sunAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -20],
-  });
-
-  const star4TranslateY = star4Anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -18],
-  });
-
-  const star5TranslateY = star5Anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -22],
-  });
-
-  const heartTranslateY = heartAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -16],
-  });
-
-  const sparkleTranslateY = sparkleAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -14],
-  });
-
-  const bismillahWidth = bismillahAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
+  const beadOuterColor = isDark ? theme.colors.tertiary : theme.colors.surface;
+  const beadInnerColor = isDark ? theme.colors.surface : theme.colors.primary;
+  const textColor = isDark ? theme.colors.text : theme.colors.surface;
+  const loadingBg = isDark ? theme.colors.card : 'rgba(255,255,255,0.25)';
+  const loadingFill = isDark ? theme.colors.tertiary : theme.colors.surface;
 
   return (
-    <ScreenWrapper statusBarHidden={true} withPadding={false}>
-      <StatusBar hidden />
-
-      {/* Background Gradient */}
-      <LinearGradient
-        colors={[
-          theme.colors.primary,
-          theme.colors.secondary,
-          theme.colors.tertiary,
-        ]}
-        style={styles.background}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+    <ScreenWrapper statusBarHidden withPadding={false}>
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'light-content'}
+        backgroundColor="transparent"
+        translucent
       />
 
-      {/* Floating Background Elements */}
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.star1,
-          {
-            opacity: star1Anim,
-            transform: [{ translateY: star1TranslateY }],
-          },
-        ]}
-      >
-        <Star size={20} color={theme.colors.accent} weight="fill" />
-      </Animated.View>
+      <LinearGradient
+        colors={splashGradient as [string, string, ...string[]]}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+      />
 
       <Animated.View
         style={[
-          styles.floatingElement,
-          styles.star2,
+          styles.content,
           {
-            opacity: star2Anim,
-            transform: [{ translateY: star2TranslateY }],
+            opacity: fadeIn,
+            transform: [{ scale }],
           },
         ]}
       >
-        <Star size={16} color={theme.colors.accent} weight="fill" />
-      </Animated.View>
-
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.star3,
-          {
-            opacity: star3Anim,
-            transform: [{ translateY: star3TranslateY }],
-          },
-        ]}
-      >
-        <Star size={24} color={theme.colors.accent} weight="fill" />
-      </Animated.View>
-
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.moon,
-          {
-            opacity: moonAnim,
-            transform: [{ translateY: moonTranslateY }],
-          },
-        ]}
-      >
-        <Moon size={28} color={theme.colors.surface} weight="fill" />
-      </Animated.View>
-
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.sun,
-          {
-            opacity: sunAnim,
-            transform: [{ translateY: sunTranslateY }],
-          },
-        ]}
-      >
-        <Sun size={32} color={theme.colors.accent} weight="fill" />
-      </Animated.View>
-
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.star4,
-          {
-            opacity: star4Anim,
-            transform: [{ translateY: star4TranslateY }],
-          },
-        ]}
-      >
-        <Star size={14} color={theme.colors.accent} weight="fill" />
-      </Animated.View>
-
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.star5,
-          {
-            opacity: star5Anim,
-            transform: [{ translateY: star5TranslateY }],
-          },
-        ]}
-      >
-        <Star size={18} color={theme.colors.accent} weight="fill" />
-      </Animated.View>
-
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.heart,
-          {
-            opacity: heartAnim,
-            transform: [{ translateY: heartTranslateY }],
-          },
-        ]}
-      >
-        <Heart size={20} color={theme.colors.accent} weight="fill" />
-      </Animated.View>
-
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.sparkle,
-          {
-            opacity: sparkleAnim,
-            transform: [{ translateY: sparkleTranslateY }],
-          },
-        ]}
-      >
-        <Sparkle size={16} color={theme.colors.accent} weight="fill" />
-      </Animated.View>
-
-      {/* Main Content */}
-      <Animated.View
-        style={[
-          styles.mainContent,
-          {
-            opacity: fadeAnim,
-            transform: [
-              { scale: scaleAnim },
-              { translateY: slideAnim },
-            ],
-          },
-        ]}
-      >
-        {/* Main Logo/Icon */}
-        {/* <Animated.View
+        <Animated.View
           style={[
-            styles.logoContainer,
+            styles.beadOuter,
             {
-              transform: [
-                { scale: pulseAnim },
-                { rotate: rotateInterpolate },
-              ],
+              backgroundColor: beadOuterColor,
+              opacity: beadGlow,
+              transform: [{ scale: beadScale }],
             },
           ]}
         >
-          <View style={[styles.logoCircle, { backgroundColor: theme.colors.surface }]}>
-            <Text style={[styles.logoText, { color: theme.colors.primary }]}>
-              ت
-            </Text>
+          <View style={[styles.beadInner, { backgroundColor: beadInnerColor }]}>
+            <Text style={[styles.beadLetter, { color: textColor }]}>تَ</Text>
           </View>
-        </Animated.View> */}
-
-        {/* App Title */}
-        <Animated.Text
-          style={[
-            styles.appTitle,
-            { color: theme.colors.surface },
-            { opacity: fadeAnim },
-          ]}
-        >
-          Digital Tasbih
-        </Animated.Text>
-
-        {/* Bismillah with writing animation */}
-        <Animated.View
-          style={[
-            styles.bismillahContainer,
-            { opacity: fadeAnim },
-          ]}
-        >
-          <Animated.Text
-            style={[
-              styles.bismillahText,
-              {
-                color: theme.colors.surface,
-                transform: [{ scaleX: bismillahWidth }],
-              },
-            ]}
-          >
-            بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-          </Animated.Text>
         </Animated.View>
 
-        {/* Subtitle */}
+        <Text style={[styles.title, { color: textColor }]}>Digital Tasbih</Text>
+
         <Animated.Text
           style={[
-            styles.appSubtitle,
-            { color: theme.colors.surface },
-            { opacity: fadeAnim },
+            styles.bismillah,
+            { color: textColor, opacity: bismillahOpacity },
           ]}
+        >
+          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+        </Animated.Text>
+
+        <Animated.Text
+          style={[styles.subtitle, { color: textColor, opacity: bismillahOpacity }]}
         >
           سُبْحَانَ اللهِ وَبِحَمْدِهِ
         </Animated.Text>
 
-        {/* Description */}
         <Animated.Text
-          style={[
-            styles.appDescription,
-            { color: theme.colors.surface },
-            { opacity: fadeAnim },
-          ]}
+          style={[styles.tagline, { color: textColor, opacity: fadeIn }]}
         >
-          Your Digital Companion for Dhikr
+          Your companion for dhikr
         </Animated.Text>
       </Animated.View>
 
-      {/* Loading Indicator */}
-      <Animated.View
-        style={[
-          styles.loadingContainer,
-          { opacity: fadeAnim },
-        ]}
-      >
-        <View style={styles.loadingDots}>
+      <Animated.View style={[styles.loadingWrap, { opacity: fadeIn }]}>
+        <View style={[styles.loadingTrack, { backgroundColor: loadingBg }]}>
           <Animated.View
             style={[
-              styles.loadingDot,
-              { backgroundColor: theme.colors.surface },
+              styles.loadingFill,
               {
-                transform: [
-                  {
-                    scale: pulseAnim,
-                  },
-                ],
-              },
-            ]}
-          />
-          <Animated.View
-            style={[
-              styles.loadingDot,
-              { backgroundColor: theme.colors.surface },
-              {
-                transform: [
-                  {
-                    scale: pulseAnim,
-                  },
-                ],
-              },
-            ]}
-          />
-          <Animated.View
-            style={[
-              styles.loadingDot,
-              { backgroundColor: theme.colors.surface },
-              {
-                transform: [
-                  {
-                    scale: pulseAnim,
-                  },
-                ],
+                backgroundColor: loadingFill,
+                width: progressWidth.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, width * 0.6],
+                }),
               },
             ]}
           />
@@ -576,136 +187,79 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  content: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  background: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  floatingElement: {
-    position: 'absolute',
-  },
-  star1: {
-    top: height * 0.15,
-    left: width * 0.1,
-  },
-  star2: {
-    top: height * 0.25,
-    right: width * 0.15,
-  },
-  star3: {
-    top: height * 0.4,
-    left: width * 0.2,
-  },
-  moon: {
-    top: height * 0.1,
-    right: width * 0.1,
-  },
-  sun: {
-    top: height * 0.2,
-    left: width * 0.05,
-  },
-  star4: {
-    top: height * 0.35,
-    right: width * 0.2,
-  },
-  star5: {
-    top: height * 0.5,
-    left: width * 0.15,
-  },
-  heart: {
-    top: height * 0.6,
-    right: width * 0.25,
-  },
-  sparkle: {
-    top: height * 0.7,
-    left: width * 0.3,
-  },
-  mainContent: {
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 32,
   },
-  logoContainer: {
-    marginBottom: 30,
-  },
-  logoCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
+  beadOuter: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 16,
-    elevation: 16,
+    elevation: 12,
   },
-  logoText: {
-    fontSize: 48,
-    fontFamily: 'Amiri-Bold',
-    textAlign: 'center',
-  },
-  appTitle: {
-    fontSize: 32,
-    fontFamily: 'Poppins-Bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  bismillahContainer: {
-    marginBottom: 20,
+  beadInner: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  bismillahText: {
-    fontSize: 26,
+  beadLetter: {
+    fontSize: 36,
     fontFamily: 'Amiri-Bold',
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    transformOrigin: 'left',
-    lineHeight: 36,
     writingDirection: 'rtl',
   },
-  appSubtitle: {
-    fontSize: 20,
+  title: {
+    fontSize: 28,
+    fontFamily: 'Poppins-Bold',
+    letterSpacing: 0.5,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  bismillah: {
+    fontSize: 22,
+    fontFamily: 'Amiri-Bold',
+    textAlign: 'center',
+    lineHeight: 34,
+    writingDirection: 'rtl',
+    marginBottom: 12,
+  },
+  subtitle: {
+    fontSize: 18,
     fontFamily: 'Amiri-Bold',
     textAlign: 'center',
     marginBottom: 16,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
-  appDescription: {
-    fontSize: 16,
+  tagline: {
+    fontSize: 15,
     fontFamily: 'Poppins-Regular',
-    textAlign: 'center',
     opacity: 0.9,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
-  loadingContainer: {
+  loadingWrap: {
     position: 'absolute',
-    bottom: 100,
+    bottom: height * 0.12,
+    left: 0,
+    right: 0,
     alignItems: 'center',
   },
-  loadingDots: {
-    flexDirection: 'row',
-    gap: 8,
+  loadingTrack: {
+    width: width * 0.6,
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
   },
-  loadingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  loadingFill: {
+    height: '100%',
+    borderRadius: 2,
   },
 });
 

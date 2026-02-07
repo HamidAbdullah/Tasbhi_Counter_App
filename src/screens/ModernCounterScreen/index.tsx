@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
+import IslamicPatternBackground from '../../components/IslamicPatternBackground';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import HapticFeedback from 'react-native-haptic-feedback';
@@ -389,17 +390,13 @@ const ModernCounterScreen: React.FC = () => {
 
   return (
     <ScreenWrapper withPadding={false}>
-
       <LinearGradient
-        colors={[
-          theme.colors.primary,
-          theme.colors.secondary,
-          theme.colors.tertiary,
-        ]}
+        colors={[theme.colors.primary, theme.colors.secondary]}
         style={styles.background}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
+        <IslamicPatternBackground color="#fff" opacity={0.04} />
         {/* Header */}
         <View style={[styles.header, { marginTop: insets.top }]}>
           <TouchableOpacity onPress={goBack} style={styles.headerButton}>
@@ -500,7 +497,7 @@ const ModernCounterScreen: React.FC = () => {
               </Text>
             </View>
 
-            {/* Progress Bar */}
+            {/* Progress Bar — gold accent at milestones */}
             <View
               style={[
                 styles.progressBar,
@@ -508,7 +505,7 @@ const ModernCounterScreen: React.FC = () => {
               ]}
             >
               <LinearGradient
-                colors={[theme.colors.primary, theme.colors.secondary]}
+                colors={[theme.colors.primary, theme.colors.accent]}
                 style={[styles.progressFill, { width: `${progress * 100}%` }]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
