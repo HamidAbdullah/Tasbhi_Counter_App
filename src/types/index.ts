@@ -26,8 +26,6 @@ export type RootStackParamList = {
   SignUp: undefined;
   MainTabs: undefined;
   Counter: { zikr: ZikrItem };
-  Settings: undefined;
-  Dashboard: undefined;
   Leaderboard: undefined;
 };
 
@@ -36,4 +34,18 @@ export type TabParamList = {
   Digital: undefined;
   Bluetooth: undefined;
   ProfileTab: undefined;
+};
+
+/** Profile tab stack: Profile (or guest view) + Settings + Login + SignUp */
+export type ProfileStackParamList = {
+  Profile: undefined;
+  Settings: undefined;
+  Login: { fromProfileTab?: boolean };
+  SignUp: { fromProfileTab?: boolean };
+};
+
+/** Legacy: kept for DigitalTasbeehScreen (unused in nav; Dashboard is now tab root). */
+export type DigitalStackParamList = {
+  Tasbeeh: undefined;
+  Dashboard: undefined;
 };

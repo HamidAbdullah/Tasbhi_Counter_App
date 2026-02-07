@@ -19,6 +19,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { RootStackParamList } from '../../types';
 import { ArrowRight, User } from 'phosphor-react-native';
 import AuthService from '../../services/AuthService';
+import { StorageUtils } from '../../Utils/StorageUtils';
 import IslamicPatternBackground from '../../components/IslamicPatternBackground';
 import { ISLAMIC_COLORS } from '../../theme';
 
@@ -72,8 +73,9 @@ const WelcomeScreen: React.FC = () => {
     }
   };
 
-  const handleGuest = () => {
+  const handleGuest = async () => {
     AuthService.signInAsGuest();
+    await StorageUtils.setAppOpened();
     navigation.replace('MainTabs' as any);
   };
 

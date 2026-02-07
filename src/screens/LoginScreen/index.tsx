@@ -14,7 +14,7 @@ import {
   Animated,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { useTheme } from '../../contexts/ThemeContext';
 import { RootStackParamList } from '../../types';
@@ -27,8 +27,12 @@ import { ISLAMIC_COLORS } from '../../theme';
 
 const { width, height } = Dimensions.get('window');
 
+type LoginRouteParams = { fromProfileTab?: boolean };
+
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<{ params?: LoginRouteParams }, 'params'>>();
+  const fromProfileTab = route.params?.fromProfileTab;
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
   const [email, setEmail] = useState('');
@@ -36,6 +40,11 @@ const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const onAuthSuccess = () => {
+    if (fromProfileTab) (navigation as any).goBack();
+    else navigation.replace('MainTabs');
+  };
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -53,7 +62,7 @@ const LoginScreen: React.FC = () => {
     setLoading(true);
     try {
       await AuthService.signInWithEmail(email, password);
-      navigation.replace('MainTabs');
+      onAuthSuccess();
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {
@@ -66,7 +75,7 @@ const LoginScreen: React.FC = () => {
     setSocialLoading(true);
     try {
       await AuthService.signInWithApple();
-      navigation.replace('MainTabs');
+      onAuthSuccess();
     } catch (error: any) {
       Alert.alert('Sign-In', error.message);
     } finally {
@@ -79,7 +88,7 @@ const LoginScreen: React.FC = () => {
     setSocialLoading(true);
     try {
       await AuthService.signInWithGoogle();
-      navigation.replace('MainTabs');
+      onAuthSuccess();
     } catch (error: any) {
       Alert.alert('Sign-In', error.message);
     } finally {
@@ -89,7 +98,8 @@ const LoginScreen: React.FC = () => {
 
   const handleGuest = () => {
     AuthService.signInAsGuest();
-    navigation.replace('MainTabs');
+    if (fromProfileTab) (navigation as any).goBack();
+    else navigation.replace('MainTabs');
   };
 
   const gradientColors = [ISLAMIC_COLORS.primary, ISLAMIC_COLORS.secondary];
@@ -222,7 +232,7 @@ const LoginScreen: React.FC = () => {
             <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
               Don't have an account?{' '}
             </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('SignUp' as any)}>
+            <TouchableOpacity onPress={() => (navigation as any).navigate('SignUp', fromProfileTab ? { fromProfileTab: true } : undefined)}>
               <Text style={[styles.footerLink, { color: theme.colors.primary }]}>Sign Up</Text>
             </TouchableOpacity>
           </View>

@@ -5,28 +5,65 @@ import {
     StyleSheet,
     TouchableOpacity,
     Dimensions,
+    ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Bluetooth, Devices, WifiHigh, CircleNotch, BluetoothConnected } from 'phosphor-react-native';
+import { Bluetooth, Devices, BluetoothConnected, ChartBar, CaretRight } from 'phosphor-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import { DigitalStackParamList } from '../../types';
+import Card from '../../components/ui/Card';
 
 const { width } = Dimensions.get('window');
+
+type DigitalTasbeehNavProp = StackNavigationProp<DigitalStackParamList, 'Tasbeeh'>;
 
 const DigitalTasbeehScreen: React.FC = () => {
     const { theme } = useTheme();
     const insets = useSafeAreaInsets();
+    const navigation = useNavigation<DigitalTasbeehNavProp>();
 
     return (
         <ScreenWrapper withPadding={false}>
-            <View style={[styles.content, { paddingTop: insets.top + 24 }]}>
+            <ScrollView
+                style={[styles.scrollView, { backgroundColor: theme.colors.background }]}
+                contentContainerStyle={[styles.content, { paddingTop: insets.top + 20, paddingBottom: 100 }]}
+                showsVerticalScrollIndicator={false}
+            >
                 <View style={styles.header}>
-                    <Text style={[styles.title, { color: theme.colors.text }]}>Digital Connection</Text>
+                    <Text style={[styles.title, { color: theme.colors.text }]}>Tasbeeh</Text>
                     <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-                        Connect your smart tasbeeh ring or device
+                        Your progress and digital connection
                     </Text>
                 </View>
+
+                {/* Dashboard entry - consistent card design */}
+                <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => navigation.navigate('Dashboard')}
+                    style={styles.dashboardCardWrap}
+                >
+                    <Card variant="elevated" padding="medium" style={[styles.dashboardCard, { backgroundColor: theme.colors.surface }]}>
+                        <LinearGradient
+                            colors={[`${theme.colors.primary}18`, `${theme.colors.secondary}08`]}
+                            style={[styles.dashboardCardInner, { borderRadius: theme.borderRadius.lg }]}
+                        >
+                            <View style={[styles.dashboardIconWrap, { backgroundColor: `${theme.colors.primary}20` }]}>
+                                <ChartBar size={28} color={theme.colors.primary} weight="duotone" />
+                            </View>
+                            <View style={styles.dashboardTextWrap}>
+                                <Text style={[styles.dashboardTitle, { color: theme.colors.text }]}>Dashboard</Text>
+                                <Text style={[styles.dashboardSubtitle, { color: theme.colors.textSecondary }]}>
+                                    View stats, daily goal & streaks
+                                </Text>
+                            </View>
+                            <CaretRight size={22} color={theme.colors.textTertiary} weight="bold" />
+                        </LinearGradient>
+                    </Card>
+                </TouchableOpacity>
 
                 <View style={styles.connectionArea}>
                     <View style={[styles.pulseContainer, { borderColor: `${theme.colors.primary}30` }]}>
@@ -42,7 +79,7 @@ const DigitalTasbeehScreen: React.FC = () => {
 
                 <View style={styles.infoSection}>
                     <View style={[styles.infoCard, { backgroundColor: theme.colors.surface }]}>
-                        <View style={styles.infoIcon}>
+                        <View style={[styles.infoIcon, { backgroundColor: `${theme.colors.primary}18` }]}>
                             <Bluetooth size={24} color={theme.colors.primary} />
                         </View>
                         <View>
@@ -54,7 +91,7 @@ const DigitalTasbeehScreen: React.FC = () => {
                     </View>
 
                     <View style={[styles.infoCard, { backgroundColor: theme.colors.surface }]}>
-                        <View style={styles.infoIcon}>
+                        <View style={[styles.infoIcon, { backgroundColor: `${theme.colors.accent}20` }]}>
                             <Devices size={24} color={theme.colors.accent} />
                         </View>
                         <View>
@@ -69,10 +106,11 @@ const DigitalTasbeehScreen: React.FC = () => {
                 <TouchableOpacity
                     style={[styles.connectButton, { backgroundColor: theme.colors.primary }]}
                     activeOpacity={0.8}
+                    onPress={() => {}}
                 >
                     <Text style={styles.connectButtonText}>Scan for Devices</Text>
                 </TouchableOpacity>
-            </View>
+            </ScrollView>
         </ScreenWrapper>
     );
 };
@@ -81,26 +119,64 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    content: {
+    scrollView: {
         flex: 1,
-        padding: 24,
-        justifyContent: 'space-between',
+    },
+    content: {
+        paddingHorizontal: 20,
     },
     header: {
-        marginTop: 0,
+        marginBottom: 20,
     },
     title: {
-        fontSize: 28,
+        fontSize: 26,
         fontFamily: 'Poppins-Bold',
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: 15,
         fontFamily: 'Poppins-Regular',
-        marginTop: 5,
+        marginTop: 4,
+    },
+    dashboardCardWrap: {
+        marginBottom: 24,
+    },
+    dashboardCard: {
+        borderRadius: 16,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    dashboardCardInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+    },
+    dashboardIconWrap: {
+        width: 52,
+        height: 52,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 14,
+    },
+    dashboardTextWrap: {
+        flex: 1,
+    },
+    dashboardTitle: {
+        fontSize: 18,
+        fontFamily: 'Poppins-SemiBold',
+    },
+    dashboardSubtitle: {
+        fontSize: 13,
+        fontFamily: 'Poppins-Regular',
+        marginTop: 2,
     },
     connectionArea: {
         alignItems: 'center',
-        marginVertical: 40,
+        marginVertical: 32,
     },
     pulseContainer: {
         width: 200,
@@ -141,7 +217,6 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 12,
-        backgroundColor: '#f0f0f0',
         justifyContent: 'center',
         alignItems: 'center',
     },

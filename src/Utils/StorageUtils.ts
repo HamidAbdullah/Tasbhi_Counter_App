@@ -8,8 +8,27 @@ const DAILY_STATS_KEY = 'daily_stats';
 const STREAK_DATA_KEY = 'streak_data';
 const RECENT_ZIKRS_KEY = 'recent_zikr_ids';
 const MAX_RECENT_ZIKRS = 10;
+const APP_ENTRY_KEY = '@tasbih_has_opened';
 
 export const StorageUtils = {
+  /** Mark that user has passed welcome (e.g. continued as guest). Used to show MainTabs on next launch. */
+  setAppOpened: async (): Promise<void> => {
+    try {
+      await AsyncStorage.setItem(APP_ENTRY_KEY, 'true');
+    } catch (e) {
+      console.warn('StorageUtils.setAppOpened', e);
+    }
+  },
+  /** True if user has already chosen "Continue as guest" or otherwise passed welcome. */
+  getAppOpened: async (): Promise<boolean> => {
+    try {
+      const v = await AsyncStorage.getItem(APP_ENTRY_KEY);
+      return v === 'true';
+    } catch {
+      return false;
+    }
+  },
+
   // Save counter data for a specific zikr
   saveCounterData: async (zikrId: number, count: number): Promise<void> => {
     try {

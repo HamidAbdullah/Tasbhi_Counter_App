@@ -13,7 +13,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { useTheme } from '../../contexts/ThemeContext';
 import { RootStackParamList } from '../../types';
@@ -25,8 +25,12 @@ import { ISLAMIC_COLORS } from '../../theme';
 
 const { width, height } = Dimensions.get('window');
 
+type SignUpRouteParams = { fromProfileTab?: boolean };
+
 const SignUpScreen: React.FC = () => {
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    const route = useRoute<RouteProp<{ params?: SignUpRouteParams }, 'params'>>();
+    const fromProfileTab = route.params?.fromProfileTab;
     const insets = useSafeAreaInsets();
     const { theme } = useTheme();
     const [name, setName] = useState('');
@@ -34,6 +38,11 @@ const SignUpScreen: React.FC = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
+
+    const onAuthSuccess = () => {
+        if (fromProfileTab) (navigation as any).goBack();
+        else navigation.navigate('MainTabs');
+    };
 
     const handleSignUp = async () => {
         if (!name || !email || !password) {
@@ -43,7 +52,7 @@ const SignUpScreen: React.FC = () => {
         setLoading(true);
         try {
             await AuthService.signUpWithEmail(email, password, name);
-            navigation.navigate('MainTabs');
+            onAuthSuccess();
         } catch (error: any) {
             Alert.alert('Registration Failed', error.message);
         } finally {
@@ -59,7 +68,7 @@ const SignUpScreen: React.FC = () => {
             } else {
                 await AuthService.signInWithGoogle();
             }
-            navigation.navigate('MainTabs');
+            onAuthSuccess();
         } catch (error: any) {
             Alert.alert('Sign-In', error.message);
         } finally {
@@ -187,7 +196,7 @@ const SignUpScreen: React.FC = () => {
                         <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
                             Already have an account?{' '}
                         </Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('Login' as any)}>
+                        <TouchableOpacity onPress={() => (navigation as any).navigate('Login', fromProfileTab ? { fromProfileTab: true } : undefined)}>
                             <Text style={[styles.footerLink, { color: theme.colors.primary }]}>Sign In</Text>
                         </TouchableOpacity>
                     </View>

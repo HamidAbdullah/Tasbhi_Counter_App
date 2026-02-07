@@ -1,16 +1,30 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import ModernHomeScreen from '../screens/ModernHomeScreen';
-import DigitalTasbeehScreen from '../screens/DigitalTasbeehScreen';
 import BluetoothScreen from '../screens/BluetoothScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import DashboardScreen from '../screens/DashboardScreen';
+import LoginScreen from '../screens/LoginScreen';
+import SignUpScreen from '../screens/SignUpScreen';
 import { useTheme } from '../contexts/ThemeContext';
-import { House, BluetoothConnected, User, Bluetooth } from 'phosphor-react-native';
+import { House, ChartBar, User, Bluetooth } from 'phosphor-react-native';
 import { Platform, ViewStyle } from 'react-native';
-import { RootStackParamList, TabParamList } from '../types';
+import { TabParamList, ProfileStackParamList } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator<TabParamList>();
+const ProfileStack = createStackNavigator<ProfileStackParamList>();
+
+const ProfileStackNavigator = () => (
+    <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
+        <ProfileStack.Screen name="Profile" component={ProfileScreen} />
+        <ProfileStack.Screen name="Settings" component={SettingsScreen} />
+        <ProfileStack.Screen name="Login" component={LoginScreen} initialParams={{ fromProfileTab: true }} />
+        <ProfileStack.Screen name="SignUp" component={SignUpScreen} initialParams={{ fromProfileTab: true }} />
+    </ProfileStack.Navigator>
+);
 
 const MainTabNavigator = () => {
     const { theme, isDark } = useTheme();
@@ -54,11 +68,11 @@ const MainTabNavigator = () => {
                 />
                 <Tab.Screen
                     name="Digital"
-                    component={DigitalTasbeehScreen}
+                    component={DashboardScreen}
                     options={{
-                        tabBarLabel: 'Tasbeeh',
+                        tabBarLabel: 'Dashboard',
                         tabBarIcon: ({ color, size, focused }: { color: string; size: number; focused: boolean }) => (
-                            <BluetoothConnected size={size} color={color} weight={focused ? 'fill' : 'regular'} />
+                            <ChartBar size={size} color={color} weight={focused ? 'fill' : 'regular'} />
                         ),
                     }}
                 />
@@ -74,9 +88,9 @@ const MainTabNavigator = () => {
                 />
                 <Tab.Screen
                     name="ProfileTab"
-                    component={ProfileScreen}
+                    component={ProfileStackNavigator}
                     options={{
-                        tabBarLabel: 'Profile',
+                        tabBarLabel: 'Me',
                         tabBarIcon: ({ color, size, focused }: { color: string; size: number; focused: boolean }) => (
                             <User size={size} color={color} weight={focused ? 'fill' : 'regular'} />
                         ),

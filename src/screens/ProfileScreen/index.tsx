@@ -5,22 +5,30 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    Image,
     Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import { useTheme } from '../../contexts/ThemeContext';
-import { User, Gear, ChartLineUp, ShieldCheck, SignOut, CaretRight, Trophy } from 'phosphor-react-native';
+import { User, Gear, ChartLineUp, ShieldCheck, SignOut, CaretRight, Trophy, SignIn, UserPlus } from 'phosphor-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import AuthService from '../../services/AuthService';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../types';
+import { CompositeNavigationProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { TabParamList, ProfileStackParamList } from '../../types';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+
+type ProfileScreenNavProp = CompositeNavigationProp<
+    StackNavigationProp<ProfileStackParamList, 'Profile'>,
+    BottomTabNavigationProp<TabParamList, 'ProfileTab'>
+>;
 
 const ProfileScreen: React.FC = () => {
     const { theme } = useTheme();
-    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    const navigation = useNavigation<ProfileScreenNavProp>();
     const insets = useSafeAreaInsets();
     const [user, setUser] = useState(AuthService.getCurrentUser());
 
@@ -40,7 +48,9 @@ const ProfileScreen: React.FC = () => {
                 onPress: async () => {
                     try {
                         await AuthService.signOut();
-                        navigation.replace('Welcome');
+                        let root = navigation.getParent();
+                        while (root?.getParent()) root = root.getParent();
+                        root?.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Welcome' }] }));
                     } catch (error: any) {
                         Alert.alert('Error', error.message);
                     }
@@ -77,6 +87,70 @@ const ProfileScreen: React.FC = () => {
             <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>{label}</Text>
         </View>
     );
+
+    // Guest view: description + Sign in / Sign up (navigate to root flow) + Settings
+    const navigateToRoot = (screen: 'Login' | 'SignUp') => {
+        let root: any = navigation.getParent();
+        while (root?.getParent()) root = root.getParent();
+        root?.navigate(screen);
+    };
+
+    if (!user) {
+        return (
+            <ScreenWrapper withPadding={false}>
+                <LinearGradient
+                    colors={[theme.colors.primary, theme.colors.secondary]}
+                    style={[styles.guestHeader, { paddingTop: insets.top + 24 }]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                >
+                    <View style={[styles.guestAvatar, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                        <User size={44} color="#FFF" weight="duotone" />
+                    </View>
+                    <Text style={styles.guestTitle}>Me</Text>
+                    <Text style={styles.guestSubtitle}>
+                        If you want to store your data and see your rank, please login.
+                    </Text>
+                </LinearGradient>
+                <View style={styles.guestContent}>
+                    <Card variant="elevated" padding="large" style={[styles.guestCard, { backgroundColor: theme.colors.surface }]}>
+                        <Text style={[styles.guestCardDesc, { color: theme.colors.textSecondary }]}>
+                            If you want to store your data and want to see your rank, please login.
+                        </Text>
+                        <Button
+                            title="Sign in"
+                            onPress={() => navigateToRoot('Login')}
+                            variant="primary"
+                            fullWidth
+                            icon={<SignIn size={20} color={theme.colors.surface} weight="bold" />}
+                            style={styles.guestButton}
+                        />
+                        <Button
+                            title="Sign up"
+                            onPress={() => navigateToRoot('SignUp')}
+                            variant="outline"
+                            fullWidth
+                            icon={<UserPlus size={20} color={theme.colors.primary} weight="bold" />}
+                            style={styles.guestButton}
+                        />
+                        <View style={[styles.guestDivider, { backgroundColor: theme.colors.border }]} />
+                        <TouchableOpacity
+                            style={styles.guestSettingsRow}
+                            onPress={() => navigation.navigate('Settings')}
+                            activeOpacity={0.7}
+                        >
+                            <Gear size={22} color={theme.colors.primary} weight="duotone" />
+                            <Text style={[styles.guestSettingsText, { color: theme.colors.text }]}>Settings</Text>
+                            <CaretRight size={18} color={theme.colors.textTertiary} />
+                        </TouchableOpacity>
+                    </Card>
+                    <Text style={[styles.versionText, { color: theme.colors.textTertiary }]}>
+                        Version 1.0.0 (Build 42)
+                    </Text>
+                </View>
+            </ScreenWrapper>
+        );
+    }
 
     return (
         <ScreenWrapper withPadding={false}>
@@ -146,7 +220,7 @@ const ProfileScreen: React.FC = () => {
                             <ProfileItem
                                 icon={Gear}
                                 label="Settings"
-                                onPress={() => { }}
+                                onPress={() => navigation.navigate('Settings')}
                             />
                             <ProfileItem
                                 icon={SignOut}
@@ -170,6 +244,66 @@ const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    guestHeader: {
+        paddingBottom: 32,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+        alignItems: 'center',
+    },
+    guestAvatar: {
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    guestTitle: {
+        fontSize: 24,
+        fontFamily: 'Poppins-Bold',
+        color: '#FFF',
+    },
+    guestSubtitle: {
+        fontSize: 14,
+        fontFamily: 'Poppins-Regular',
+        color: 'rgba(255,255,255,0.85)',
+        marginTop: 6,
+        paddingHorizontal: 24,
+        textAlign: 'center',
+    },
+    guestContent: {
+        padding: 20,
+        marginTop: -20,
+    },
+    guestCard: {
+        borderRadius: 16,
+        marginBottom: 24,
+    },
+    guestCardDesc: {
+        fontSize: 14,
+        fontFamily: 'Poppins-Regular',
+        lineHeight: 20,
+        marginBottom: 20,
+    },
+    guestButton: {
+        marginBottom: 12,
+    },
+    guestDivider: {
+        height: 1,
+        width: '100%',
+        marginVertical: 16,
+    },
+    guestSettingsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        gap: 12,
+    },
+    guestSettingsText: {
+        flex: 1,
+        fontSize: 16,
+        fontFamily: 'Poppins-Medium',
     },
     header: {
         paddingBottom: 40,
@@ -226,13 +360,13 @@ const styles = StyleSheet.create({
     },
     statCard: {
         flex: 1,
-        padding: 15,
-        borderRadius: 20,
+        padding: 16,
+        borderRadius: 16,
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
         elevation: 3,
     },
     statIconContainer: {
@@ -262,12 +396,12 @@ const styles = StyleSheet.create({
         letterSpacing: 1,
     },
     card: {
-        borderRadius: 20,
+        borderRadius: 16,
         overflow: 'hidden',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
         elevation: 3,
     },
     profileItem: {

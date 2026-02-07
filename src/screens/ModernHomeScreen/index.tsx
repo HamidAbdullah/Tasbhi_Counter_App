@@ -19,7 +19,6 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import {
   Plus,
-  ChartBar,
   Gear,
   Moon,
   BookOpen,
@@ -349,20 +348,6 @@ const ModernHomeScreen: React.FC = () => {
             <Text style={[styles.headerTitle, { color: theme.colors.surface }]}>
               Digital Tasbih
             </Text>
-          </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Dashboard' as any)}
-              style={styles.headerActionButton}
-            >
-              <ChartBar size={20} color={theme.colors.surface} weight="bold" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Settings' as any)}
-              style={styles.headerActionButton}
-            >
-              <Gear size={20} color={theme.colors.surface} weight="bold" />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -958,18 +943,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: 8,
     paddingHorizontal: 20,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  headerActionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
   // Content Styles

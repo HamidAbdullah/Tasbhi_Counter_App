@@ -27,17 +27,17 @@ import {
   Info,
   MoonStars,
   Bell,
-  Focus,
+  UserFocus,
 } from 'phosphor-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../contexts/ThemeContext';
-import { RootStackParamList } from '../../types';
+import { ProfileStackParamList } from '../../types';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { StorageUtils } from '../../Utils/StorageUtils';
 
 type SettingsScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
+  ProfileStackParamList,
   'Settings'
 >;
 
@@ -262,7 +262,7 @@ const SettingsScreen: React.FC = () => {
           </SettingItem>
 
           <SettingItem
-            icon={<Focus size={24} color={theme.colors.primary} weight="bold" />}
+            icon={<UserFocus size={24} color={theme.colors.primary} weight="bold" />}
             title="Focus Mode"
             subtitle="Hide extra UI during dhikr"
           >

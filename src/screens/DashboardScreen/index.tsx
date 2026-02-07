@@ -11,7 +11,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
 import {
   ArrowLeft,
   ChartBar,
@@ -25,7 +24,6 @@ import {
 } from 'phosphor-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../contexts/ThemeContext';
-import { RootStackParamList } from '../../types';
 import { CounterData } from '../../types';
 import Card from '../../components/ui/Card';
 import CircularProgress from '../../components/ui/CircularProgress';
@@ -33,8 +31,6 @@ import Button from '../../components/ui/Button';
 import { StorageUtils } from '../../Utils/StorageUtils';
 
 const { width } = Dimensions.get('window');
-
-type DashboardScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Dashboard'>;
 
 const BackIcon = ({ size = 24, color = '#ffffff' }) => (
   <ArrowLeft size={size} color={color} weight="bold" />
@@ -68,7 +64,8 @@ interface DashboardStats {
 }
 
 const DashboardScreen: React.FC = () => {
-  const navigation = useNavigation<DashboardScreenNavigationProp>();
+  const navigation = useNavigation();
+  const canGoBack = navigation.canGoBack?.() ?? false;
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const [stats, setStats] = useState<DashboardStats>({
@@ -134,7 +131,7 @@ const DashboardScreen: React.FC = () => {
   };
 
   const goBack = () => {
-    navigation.goBack();
+    if (canGoBack) (navigation as any).goBack();
   };
 
   const StatCard: React.FC<{
@@ -191,17 +188,19 @@ const DashboardScreen: React.FC = () => {
         end={{ x: 1, y: 1 }}
       >
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={goBack} style={styles.backButton}>
-            <BackIcon size={24} color={theme.colors.surface} />
-          </TouchableOpacity>
-
+          {canGoBack ? (
+            <TouchableOpacity onPress={goBack} style={styles.backButton}>
+              <BackIcon size={24} color={theme.colors.surface} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.backButton} />
+          )}
           <View style={styles.headerCenter}>
             <StatsIcon size={28} color={theme.colors.surface} />
             <Text style={[styles.headerTitle, { color: theme.colors.surface }]}>
               Dashboard
             </Text>
           </View>
-
           <View style={styles.headerRight} />
         </View>
       </LinearGradient>
