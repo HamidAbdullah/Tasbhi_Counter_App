@@ -74,7 +74,7 @@ const ModernHomeScreen: React.FC = () => {
     reference: '',
     recommendedCount: 33,
   });
-
+  console.log('HomeScreen Rendered');
   // Load custom zikrs on component mount and when screen comes into focus
   React.useEffect(() => {
     loadCustomZikrs();

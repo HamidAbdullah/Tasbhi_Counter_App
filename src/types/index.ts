@@ -9,6 +9,8 @@ export interface ZikrItem {
   recommendedCount: number;
   category?: ZikrCategory;
   isSunnah?: boolean;
+  /** Optional Urdu translation for custom verses */
+  translationUrdu?: string;
 }
 
 export interface CounterData {

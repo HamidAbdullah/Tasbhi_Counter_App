@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import MainTabNavigator from './src/navigation/MainTabNavigator';
@@ -88,11 +89,13 @@ const AppNavigator: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <AppNavigator />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AppNavigator />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 };
 
