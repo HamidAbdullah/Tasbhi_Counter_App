@@ -395,7 +395,12 @@ const ModernHomeScreen: React.FC = () => {
             </TouchableOpacity>
           </LinearGradient>
 
-          <ScrollView style={styles.modalScrollView}>
+          <ScrollView
+            style={styles.modalScrollView}
+            contentContainerStyle={styles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator
+          >
               <View style={styles.inputContainer}>
                 <Text style={[styles.inputLabel, { color: theme.colors.text }]}>
                   Arabic Text *
@@ -572,7 +577,12 @@ const ModernHomeScreen: React.FC = () => {
             </TouchableOpacity>
           </LinearGradient>
 
-          <ScrollView style={styles.modalScrollView}>
+          <ScrollView
+            style={styles.modalScrollView}
+            contentContainerStyle={styles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator
+          >
               <View style={styles.inputContainer}>
                 <Text style={[styles.inputLabel, { color: theme.colors.text }]}>
                   Arabic Text *
@@ -908,8 +918,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalScrollView: {
+    flex: 1,
     maxHeight: 400,
+  },
+  modalScrollContent: {
     paddingHorizontal: 20,
+    paddingBottom: 48,
   },
   inputContainer: {
     marginVertical: 8,

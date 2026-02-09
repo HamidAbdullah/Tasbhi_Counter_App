@@ -112,7 +112,6 @@ const TapTasbeehFrame: React.FC<TapTasbeehFrameProps> = ({
           </TouchableOpacity>
         </Animated.View>
       </View>
-      <Text style={[styles.tapHint, { color: theme.colors.surface }]}>Tap the centre to count</Text>
     </View>
   );
 };
