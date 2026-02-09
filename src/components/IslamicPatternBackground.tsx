@@ -41,10 +41,11 @@ const IslamicPatternBackground: React.FC<IslamicPatternBackgroundProps> = ({
     }
   }
 
-  const hexColor = color.startsWith('#') ? color : `#${color}`;
-  const r = parseInt(hexColor.slice(1, 3), 16);
-  const g = parseInt(hexColor.slice(3, 5), 16);
-  const b = parseInt(hexColor.slice(5, 7), 16);
+  let hex = color.startsWith('#') ? color.slice(1) : color;
+  if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  const r = parseInt(hex.slice(0, 2), 16) || 0;
+  const g = parseInt(hex.slice(2, 4), 16) || 0;
+  const b = parseInt(hex.slice(4, 6), 16) || 0;
   const fillWithOpacity = `rgba(${r},${g},${b},${opacity})`;
 
   return (

@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { getAuth, onAuthStateChanged as onAuthStateChangedModular, FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 class AuthService {
@@ -48,8 +48,9 @@ class AuthService {
                 throw new Error('Apple Sign-In failed: No identity token.');
             }
 
-            const credential = auth.AppleAuthProvider.credential(identityToken, rawNonce);
-            const userCredential = await auth().signInWithCredential(credential);
+            const { AppleAuthProvider, signInWithCredential } = require('@react-native-firebase/auth');
+            const credential = AppleAuthProvider.credential(identityToken, rawNonce);
+            const userCredential = await signInWithCredential(getAuth(), credential);
             return userCredential.user;
         } catch (e: any) {
             if (e?.code === 'ERR_REQUEST_CANCELED') {
@@ -62,20 +63,21 @@ class AuthService {
         }
     }
 
-    // Auth state listener
+    // Auth state listener (modular API)
     onAuthStateChanged(callback: (user: FirebaseAuthTypes.User | null) => void) {
-        return auth().onAuthStateChanged(callback);
+        return onAuthStateChangedModular(getAuth(), callback);
     }
 
     // Get current user
     getCurrentUser() {
-        return auth().currentUser;
+        return getAuth().currentUser;
     }
 
     // Email/Password Sign Up
     async signUpWithEmail(email: string, password: string, name: string) {
         try {
-            const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+            const { createUserWithEmailAndPassword } = require('@react-native-firebase/auth');
+            const userCredential = await createUserWithEmailAndPassword(getAuth(), email, password);
             if (userCredential.user) {
                 await userCredential.user.updateProfile({ displayName: name });
             }
@@ -88,7 +90,8 @@ class AuthService {
     // Email/Password Sign In
     async signInWithEmail(email: string, password: string) {
         try {
-            const userCredential = await auth().signInWithEmailAndPassword(email, password);
+            const { signInWithEmailAndPassword } = require('@react-native-firebase/auth');
+            const userCredential = await signInWithEmailAndPassword(getAuth(), email, password);
             return userCredential.user;
         } catch (error: any) {
             throw this.handleError(error);
@@ -109,8 +112,9 @@ class AuthService {
                 throw new Error('Google Sign-In failed: No ID token received');
             }
 
-            const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-            const userCredential = await auth().signInWithCredential(googleCredential);
+            const { GoogleAuthProvider, signInWithCredential } = require('@react-native-firebase/auth');
+            const googleCredential = GoogleAuthProvider.credential(idToken);
+            const userCredential = await signInWithCredential(getAuth(), googleCredential);
             return userCredential.user;
         } catch (error: any) {
             throw this.handleError(error);
@@ -121,7 +125,8 @@ class AuthService {
     async signOut() {
         try {
             await GoogleSignin.signOut();
-            await auth().signOut();
+            const { signOut: firebaseSignOut } = require('@react-native-firebase/auth');
+            await firebaseSignOut(getAuth());
         } catch (error: any) {
             throw this.handleError(error);
         }
@@ -130,7 +135,8 @@ class AuthService {
     // Password Reset
     async sendPasswordResetEmail(email: string) {
         try {
-            await auth().sendPasswordResetEmail(email);
+            const { sendPasswordResetEmail: sendResetEmail } = require('@react-native-firebase/auth');
+            await sendResetEmail(getAuth(), email);
         } catch (error: any) {
             throw this.handleError(error);
         }

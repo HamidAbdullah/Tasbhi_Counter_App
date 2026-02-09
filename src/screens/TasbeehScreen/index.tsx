@@ -1,16 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Modal,
-  ScrollView,
-  TextInput,
-  Pressable,
-} from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { BottomSheetMethods } from '@devvie/bottom-sheet';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import IslamicPatternBackground from '../../components/IslamicPatternBackground';
@@ -20,19 +11,14 @@ import { ZikrItem } from '../../types';
 import { AZKAAR } from '../../constants/AzkarData';
 import { StorageUtils } from '../../Utils/StorageUtils';
 import TapTasbeehFrame from '../../components/TapTasbeehFrame';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import {
-  BookOpen,
-  Hash,
-  Plus,
-  PencilSimpleLine,
-  ArrowCounterClockwise,
-  CaretRight,
-  X,
-} from 'phosphor-react-native';
-
-const ROUND_OPTIONS = [33, 99, 100, 34, 11, 7];
+import TasbeehHeader from './components/TasbeehHeader';
+import TasbeehActionBar from './components/TasbeehActionBar';
+import ZikrCardArabic from './components/ZikrCardArabic';
+import RoundProgressCard from './components/RoundProgressCard';
+import DhikrBottomSheet from './components/DhikrBottomSheet';
+import CountBottomSheet from './components/CountBottomSheet';
+import AddCountBottomSheet from './components/AddCountBottomSheet';
+import CustomDhikrBottomSheet from './components/CustomDhikrBottomSheet';
 
 const TasbeehScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -43,15 +29,14 @@ const TasbeehScreen: React.FC = () => {
   const [customZikrs, setCustomZikrs] = useState<ZikrItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [manualInput, setManualInput] = useState('');
-  const [modalDhikr, setModalDhikr] = useState(false);
-  const [modalCount, setModalCount] = useState(false);
-  const [modalAdd, setModalAdd] = useState(false);
-  const [modalCustom, setModalCustom] = useState(false);
-  console.log('TasbeehScreen Rendered');
+  const [customVerse, setCustomVerse] = useState({ arabic: '', recommendedCount: 33 });
 
-  const [customVerse, setCustomVerse] = useState({ arabic: '', translation: '', translationUrdu: '', recommendedCount: 33 });
+  const dhikrSheetRef = useRef<BottomSheetMethods>(null);
+  const countSheetRef = useRef<BottomSheetMethods>(null);
+  const addSheetRef = useRef<BottomSheetMethods>(null);
+  const customSheetRef = useRef<BottomSheetMethods>(null);
 
-  const allZikrs = [...AZKAAR, ...customZikrs];
+  const allZikrs = useMemo(() => [...AZKAAR, ...customZikrs], [customZikrs]);
 
   const loadData = useCallback(async () => {
     try {
@@ -72,36 +57,36 @@ const TasbeehScreen: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  const handleSelectZikr = (z: ZikrItem) => {
+  const handleSelectZikr = useCallback((z: ZikrItem) => {
     setZikr(z);
     setRoundCount(z.recommendedCount);
-    setModalDhikr(false);
+    dhikrSheetRef.current?.close();
     setLoading(true);
-    StorageUtils.getCounterData(z.id).then(c => {
+    StorageUtils.getCounterData(z.id).then((c) => {
       setCount(c);
       setLoading(false);
     });
-  };
+  }, []);
 
-  const handleSelectRoundCount = (n: number) => {
+  const handleSelectRoundCount = useCallback((n: number) => {
     setRoundCount(n);
-    setModalCount(false);
-  };
+    countSheetRef.current?.close();
+  }, []);
 
-  const handleIncrement = async () => {
+  const handleIncrement = useCallback(async () => {
     const newCount = count + 1;
     setCount(newCount);
     HapticFeedback.trigger('impactLight');
     await StorageUtils.saveCounterData(zikr.id, newCount);
     const today = new Date().toISOString().split('T')[0];
-    const todayStats = await StorageUtils.getDailyStats(today) || { totalCount: 0, totalRounds: 0 };
+    const todayStats = (await StorageUtils.getDailyStats(today)) || { totalCount: 0, totalRounds: 0 };
     todayStats.totalCount += 1;
     todayStats.totalRounds = Math.floor(todayStats.totalCount / roundCount);
     await StorageUtils.saveDailyStats(today, todayStats);
     StorageUtils.updateStreak().catch(() => {});
-  };
+  }, [count, zikr.id, roundCount]);
 
-  const handleAddManual = async () => {
+  const handleAddManual = useCallback(async () => {
     const num = parseInt(manualInput, 10);
     if (Number.isNaN(num) || num < 1) {
       Alert.alert('Invalid', 'Enter a positive number');
@@ -110,42 +95,41 @@ const TasbeehScreen: React.FC = () => {
     const newCount = count + num;
     setCount(newCount);
     setManualInput('');
-    setModalAdd(false);
+    addSheetRef.current?.close();
     await StorageUtils.saveCounterData(zikr.id, newCount);
     const today = new Date().toISOString().split('T')[0];
-    const todayStats = await StorageUtils.getDailyStats(today) || { totalCount: 0, totalRounds: 0 };
+    const todayStats = (await StorageUtils.getDailyStats(today)) || { totalCount: 0, totalRounds: 0 };
     todayStats.totalCount += num;
     todayStats.totalRounds = Math.floor(todayStats.totalCount / roundCount);
     await StorageUtils.saveDailyStats(today, todayStats);
     StorageUtils.updateStreak().catch(() => {});
-  };
+  }, [manualInput, count, zikr.id, roundCount]);
 
-  const handleSaveCustomDhikr = async () => {
-    if (!customVerse.arabic.trim() || !customVerse.translation.trim()) {
-      Alert.alert('Required', 'Please enter the verse (Arabic) and at least English translation.');
+  const handleSaveCustomDhikr = useCallback(async () => {
+    if (!customVerse.arabic.trim()) {
+      Alert.alert('Required', 'Please enter the verse (Arabic).');
       return;
     }
     const customZikr: ZikrItem = {
       id: Date.now(),
       arabic: customVerse.arabic.trim(),
       transliteration: '',
-      translation: customVerse.translation.trim(),
+      translation: '',
       reference: 'Custom',
       recommendedCount: customVerse.recommendedCount,
       category: 'custom',
-      translationUrdu: customVerse.translationUrdu.trim() || undefined,
     };
     try {
       await StorageUtils.saveCustomZikr(customZikr);
-      setCustomZikrs(prev => [...prev, customZikr]);
-      setCustomVerse({ arabic: '', translation: '', translationUrdu: '', recommendedCount: 33 });
-      setModalCustom(false);
+      setCustomZikrs((prev) => [...prev, customZikr]);
+      setCustomVerse({ arabic: '', recommendedCount: 33 });
+      customSheetRef.current?.close();
     } catch (e) {
       Alert.alert('Error', 'Failed to save custom dhikr');
     }
-  };
+  }, [customVerse.arabic, customVerse.recommendedCount]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     Alert.alert('Reset', 'Reset this counter to zero?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -157,11 +141,28 @@ const TasbeehScreen: React.FC = () => {
         },
       },
     ]);
-  };
+  }, [zikr.id]);
 
   const currentRoundCount = count % roundCount;
   const completedRounds = Math.floor(count / roundCount);
   const progress = roundCount > 0 ? currentRoundCount / roundCount : 0;
+
+  const zikrCardStyle = useMemo(
+    () => ({
+      backgroundColor: theme.colors.surface,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      elevation: 6,
+    }),
+    [theme.colors.surface]
+  );
+
+  const progressCardStyle = useMemo(
+    () => ({ backgroundColor: theme.colors.surface }),
+    [theme.colors.surface]
+  );
 
   return (
     <ScreenWrapper withPadding={false}>
@@ -171,82 +172,34 @@ const TasbeehScreen: React.FC = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <IslamicPatternBackground color="#fff" opacity={0.05} />
+        <IslamicPatternBackground color="#ffffff" opacity={0.05} />
 
-        <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: theme.colors.surface }]}>Tasbeeh</Text>
-          <Text style={[styles.headerSubtitle, { color: 'rgba(255,255,255,0.85)' }]}>Count your remembrance</Text>
-        </View>
+        <TasbeehHeader titleColor={theme.colors.surface} subtitleColor="rgba(255,255,255,0.85)" />
 
-        {/* Action bar */}
-        <View style={styles.buttonsRow}>
-          <TouchableOpacity
-            style={[styles.topButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
-            onPress={() => setModalDhikr(true)}
-            activeOpacity={0.8}
-          >
-            <BookOpen size={18} color={theme.colors.surface} weight="duotone" />
-            <Text style={styles.topButtonText}>Dhikr</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.topButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
-            onPress={() => setModalCount(true)}
-            activeOpacity={0.8}
-          >
-            <Hash size={18} color={theme.colors.surface} weight="duotone" />
-            <Text style={styles.topButtonText}>Count</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.topButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
-            onPress={() => setModalAdd(true)}
-            activeOpacity={0.8}
-          >
-            <Plus size={18} color={theme.colors.surface} weight="duotone" />
-            <Text style={styles.topButtonText}>Add</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.topButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
-            onPress={() => setModalCustom(true)}
-            activeOpacity={0.8}
-          >
-            <PencilSimpleLine size={18} color={theme.colors.surface} weight="duotone" />
-            <Text style={styles.topButtonText}>Custom</Text>
-          </TouchableOpacity>
-        </View>
+        <TasbeehActionBar
+          iconColor={theme.colors.surface}
+          onDhikr={() => dhikrSheetRef.current?.open()}
+          onCount={() => countSheetRef.current?.open()}
+          onAdd={() => addSheetRef.current?.open()}
+          onCustom={() => customSheetRef.current?.open()}
+        />
 
-        {/* Current dhikr */}
-        <Card variant="elevated" padding="medium" style={[styles.zikrCard, { backgroundColor: theme.colors.surface, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 12, elevation: 6 }]}>
-          <Text style={[styles.arabic, { color: theme.colors.text }]}>{zikr.arabic}</Text>
-          <Text style={[styles.translation, { color: theme.colors.textSecondary }]}>{zikr.translation}</Text>
-          {zikr.translationUrdu ? (
-            <Text style={[styles.translationUrdu, { color: theme.colors.textTertiary }]}>{zikr.translationUrdu}</Text>
-          ) : null}
-        </Card>
+        <ZikrCardArabic arabic={zikr.arabic} textColor={theme.colors.text} cardStyle={zikrCardStyle} />
 
-        {/* Round progress */}
-        <Card variant="outlined" padding="medium" style={[styles.progressCard, { backgroundColor: theme.colors.surface }]}>
-          <View style={styles.progressRow}>
-            <Text style={[styles.progressLabel, { color: theme.colors.text }]}>
-              {currentRoundCount} / {roundCount}
-            </Text>
-            <TouchableOpacity onPress={handleReset} style={styles.resetBtn}>
-              <ArrowCounterClockwise size={18} color={theme.colors.primary} weight="bold" />
-            </TouchableOpacity>
-          </View>
-          <View style={[styles.progressBar, { backgroundColor: theme.colors.border }]}>
-            <View
-              style={[
-                styles.progressFill,
-                { width: `${progress * 100}%`, backgroundColor: theme.colors.primary },
-              ]}
-            />
-          </View>
-          <Text style={[styles.totalLabel, { color: theme.colors.textSecondary }]}>
-            Total: {count} {completedRounds > 0 && ` · ${completedRounds} round${completedRounds > 1 ? 's' : ''}`}
-          </Text>
-        </Card>
+        <RoundProgressCard
+          currentRoundCount={currentRoundCount}
+          roundCount={roundCount}
+          count={count}
+          completedRounds={completedRounds}
+          progressFillPct={progress}
+          textColor={theme.colors.text}
+          secondaryColor={theme.colors.textSecondary}
+          borderColor={theme.colors.border}
+          primaryColor={theme.colors.primary}
+          cardStyle={progressCardStyle}
+          onReset={handleReset}
+        />
 
-        {/* Tap frame – no rotation, press-only feedback */}
         <View style={styles.tapArea}>
           {loading ? (
             <Text style={[styles.hint, { color: theme.colors.surface }]}>Loading...</Text>
@@ -261,232 +214,68 @@ const TasbeehScreen: React.FC = () => {
         </View>
       </LinearGradient>
 
-      {/* Dhikr selection modal */}
-      <Modal visible={modalDhikr} transparent animationType="slide">
-        <Pressable style={[styles.modalOverlay, { backgroundColor: theme.colors.overlay }]} onPress={() => setModalDhikr(false)}>
-          <View style={[styles.modalBox, { backgroundColor: theme.colors.surface }]} onStartShouldSetResponder={() => true}>
-            <View style={styles.sheetHeader}>
-              <Text style={[styles.sheetTitle, { color: theme.colors.text }]}>Choose Dhikr</Text>
-              <TouchableOpacity onPress={() => setModalDhikr(false)}><X size={24} color={theme.colors.text} weight="bold" /></TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalScroll} contentContainerStyle={styles.sheetScrollContent} keyboardShouldPersistTaps="handled">
-              {allZikrs.map((z) => (
-                <TouchableOpacity
-                  key={z.id}
-                  style={[styles.dhikrRow, { borderBottomColor: theme.colors.border }]}
-                  onPress={() => handleSelectZikr(z)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.dhikrRowArabic, { color: theme.colors.text }]} numberOfLines={1}>{z.arabic}</Text>
-                  <Text style={[styles.dhikrRowCount, { color: theme.colors.primary }]}>{z.recommendedCount}</Text>
-                  <CaretRight size={20} color={theme.colors.textTertiary} />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </Pressable>
-      </Modal>
+      <DhikrBottomSheet
+        ref={dhikrSheetRef}
+        zikrs={allZikrs}
+        textColor={theme.colors.text}
+        primaryColor={theme.colors.primary}
+        tertiaryColor={theme.colors.textTertiary}
+        borderColor={theme.colors.border}
+        surfaceColor={theme.colors.surface}
+        backdropColor={theme.colors.overlay}
+        onClose={() => dhikrSheetRef.current?.close()}
+        onSelect={handleSelectZikr}
+      />
 
-      {/* Count selection modal */}
-      <Modal visible={modalCount} transparent animationType="fade">
-        <Pressable style={[styles.modalOverlay, { backgroundColor: theme.colors.overlay }]} onPress={() => setModalCount(false)}>
-          <View style={[styles.modalBoxSmall, { backgroundColor: theme.colors.surface }]} onStartShouldSetResponder={() => true}>
-            <Text style={[styles.sheetTitle, { color: theme.colors.text }]}>Round count</Text>
-            <View style={styles.countOptions}>
-              {ROUND_OPTIONS.map((n) => (
-                <TouchableOpacity
-                  key={n}
-                  style={[styles.countOption, { backgroundColor: roundCount === n ? theme.colors.primary : theme.colors.background }]}
-                  onPress={() => handleSelectRoundCount(n)}
-                >
-                  <Text style={[styles.countOptionText, { color: roundCount === n ? theme.colors.surface : theme.colors.text }]}>{n}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <TouchableOpacity onPress={() => setModalCount(false)} style={styles.sheetDone}>
-              <Text style={[styles.sheetDoneText, { color: theme.colors.primary }]}>Done</Text>
-            </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Modal>
+      <CountBottomSheet
+        ref={countSheetRef}
+        roundCount={roundCount}
+        textColor={theme.colors.text}
+        primaryColor={theme.colors.primary}
+        surfaceColor={theme.colors.surface}
+        bgColor={theme.colors.background}
+        backdropColor={theme.colors.overlay}
+        onClose={() => countSheetRef.current?.close()}
+        onSelect={handleSelectRoundCount}
+      />
 
-      {/* Add count manually modal */}
-      <Modal visible={modalAdd} transparent animationType="slide">
-        <View style={[styles.modalOverlay, { backgroundColor: theme.colors.overlay }]}>
-          <View style={[styles.modalBoxSmall, { backgroundColor: theme.colors.surface }]}>
-            <View style={styles.sheetHeader}>
-              <Text style={[styles.sheetTitle, { color: theme.colors.text }]}>Add count</Text>
-              <TouchableOpacity onPress={() => setModalAdd(false)}><X size={24} color={theme.colors.text} weight="bold" /></TouchableOpacity>
-            </View>
-            <Text style={[styles.manualHint, { color: theme.colors.textSecondary }]}>Used a physical tasbeeh? Enter the count to add to today.</Text>
-            <TextInput
-              style={[styles.manualInput, { borderColor: theme.colors.border, color: theme.colors.text }]}
-              placeholder="e.g. 100"
-              placeholderTextColor={theme.colors.textTertiary}
-              value={manualInput}
-              onChangeText={setManualInput}
-              keyboardType="number-pad"
-            />
-            <Button title="Add to count" onPress={handleAddManual} variant="primary" fullWidth style={styles.manualButton} />
-          </View>
-        </View>
-      </Modal>
+      <AddCountBottomSheet
+        ref={addSheetRef}
+        manualInput={manualInput}
+        textColor={theme.colors.text}
+        secondaryColor={theme.colors.textSecondary}
+        tertiaryColor={theme.colors.textTertiary}
+        borderColor={theme.colors.border}
+        surfaceColor={theme.colors.surface}
+        backdropColor={theme.colors.overlay}
+        onClose={() => addSheetRef.current?.close()}
+        onInputChange={setManualInput}
+        onAdd={handleAddManual}
+      />
 
-      {/* Add Custom Dhikr modal */}
-      <Modal visible={modalCustom} transparent animationType="slide">
-        <View style={[styles.modalOverlay, { backgroundColor: theme.colors.overlay }]}>
-          <View style={[styles.modalBox, { backgroundColor: theme.colors.surface }]}>
-            <View style={styles.sheetHeader}>
-              <Text style={[styles.sheetTitle, { color: theme.colors.text }]}>Add custom verse</Text>
-              <TouchableOpacity onPress={() => setModalCustom(false)}><X size={24} color={theme.colors.text} weight="bold" /></TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalScroll} contentContainerStyle={[styles.sheetPadding, styles.sheetScrollContent]} keyboardShouldPersistTaps="handled">
-              <Text style={[styles.manualHint, { color: theme.colors.textSecondary }]}>Add a verse with Arabic text and translations (English and Urdu).</Text>
-              <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Verse (Arabic)</Text>
-              <TextInput
-                style={[styles.textArea, { borderColor: theme.colors.border, color: theme.colors.text }]}
-                placeholder="Enter Arabic verse..."
-                placeholderTextColor={theme.colors.textTertiary}
-                value={customVerse.arabic}
-                onChangeText={(t) => setCustomVerse(prev => ({ ...prev, arabic: t }))}
-                multiline
-                numberOfLines={3}
-              />
-              <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Translation (English)</Text>
-              <TextInput
-                style={[styles.textArea, { borderColor: theme.colors.border, color: theme.colors.text }]}
-                placeholder="English translation..."
-                placeholderTextColor={theme.colors.textTertiary}
-                value={customVerse.translation}
-                onChangeText={(t) => setCustomVerse(prev => ({ ...prev, translation: t }))}
-                multiline
-                numberOfLines={2}
-              />
-              <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Translation (Urdu)</Text>
-              <TextInput
-                style={[styles.textArea, { borderColor: theme.colors.border, color: theme.colors.text }]}
-                placeholder="اردو ترجمہ (optional)"
-                placeholderTextColor={theme.colors.textTertiary}
-                value={customVerse.translationUrdu}
-                onChangeText={(t) => setCustomVerse(prev => ({ ...prev, translationUrdu: t }))}
-                multiline
-                numberOfLines={2}
-              />
-              <Text style={[styles.inputLabel, { color: theme.colors.text }]}>Recommended count per round</Text>
-              <View style={styles.countOptions}>
-                {ROUND_OPTIONS.map((n) => (
-                  <TouchableOpacity
-                    key={n}
-                    style={[styles.countOptionSmall, { backgroundColor: customVerse.recommendedCount === n ? theme.colors.primary : theme.colors.background }]}
-                    onPress={() => setCustomVerse(prev => ({ ...prev, recommendedCount: n }))}
-                  >
-                    <Text style={[styles.countOptionText, { color: customVerse.recommendedCount === n ? theme.colors.surface : theme.colors.text }]}>{n}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <Button title="Save custom dhikr" onPress={handleSaveCustomDhikr} variant="primary" fullWidth style={styles.manualButton} />
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      <CustomDhikrBottomSheet
+        ref={customSheetRef}
+        arabic={customVerse.arabic}
+        recommendedCount={customVerse.recommendedCount}
+        textColor={theme.colors.text}
+        secondaryColor={theme.colors.textSecondary}
+        tertiaryColor={theme.colors.textTertiary}
+        borderColor={theme.colors.border}
+        primaryColor={theme.colors.primary}
+        surfaceColor={theme.colors.surface}
+        bgColor={theme.colors.background}
+        backdropColor={theme.colors.overlay}
+        onClose={() => customSheetRef.current?.close()}
+        onArabicChange={(t) => setCustomVerse((prev) => ({ ...prev, arabic: t }))}
+        onCountSelect={(n) => setCustomVerse((prev) => ({ ...prev, recommendedCount: n }))}
+        onSave={handleSaveCustomDhikr}
+      />
     </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  header: {
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontFamily: 'Poppins-SemiBold',
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    fontFamily: 'Poppins-Regular',
-    marginTop: 2,
-  },
-  buttonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-  },
-  topButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 10,
-    borderRadius: 12,
-  },
-  topButtonText: {
-    fontSize: 12,
-    fontFamily: 'Poppins-SemiBold',
-    color: '#fff',
-  },
-  zikrCard: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  arabic: {
-    fontSize: 22,
-    fontFamily: 'Amiri-Bold',
-    textAlign: 'center',
-    lineHeight: 36,
-  },
-  translation: {
-    fontSize: 13,
-    fontFamily: 'Poppins-Regular',
-    marginTop: 6,
-    textAlign: 'center',
-  },
-  translationUrdu: {
-    fontSize: 12,
-    fontFamily: 'Poppins-Regular',
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  progressCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 16,
-  },
-  progressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  progressLabel: {
-    fontSize: 16,
-    fontFamily: 'Poppins-SemiBold',
-  },
-  resetBtn: {
-    padding: 6,
-  },
-  progressBar: {
-    height: 6,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  totalLabel: {
-    fontSize: 12,
-    fontFamily: 'Poppins-Regular',
-    marginTop: 8,
-  },
+  gradient: { flex: 1 },
   tapArea: {
     flex: 1,
     alignItems: 'center',
@@ -496,124 +285,6 @@ const styles = StyleSheet.create({
   hint: {
     fontSize: 16,
     fontFamily: 'Poppins-Regular',
-  },
-  sheetHeader: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-  sheetTitle: {
-    fontSize: 18,
-    fontFamily: 'Poppins-SemiBold',
-    marginBottom: 12,
-  },
-  sheetPadding: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  modalBox: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '80%',
-    paddingBottom: 32,
-  },
-  modalBoxSmall: {
-    marginHorizontal: 24,
-    marginBottom: 80,
-    borderRadius: 20,
-    padding: 20,
-  },
-  modalScroll: {
-    maxHeight: 400,
-  },
-  sheetScrollContent: {
-    paddingBottom: 40,
-  },
-  dhikrRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-  },
-  dhikrRowArabic: {
-    flex: 1,
-    fontSize: 18,
-    fontFamily: 'Amiri-Bold',
-  },
-  dhikrRowCount: {
-    fontSize: 14,
-    fontFamily: 'Poppins-SemiBold',
-    marginRight: 8,
-  },
-  countOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 16,
-  },
-  countOption: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    minWidth: 64,
-    alignItems: 'center',
-  },
-  countOptionSmall: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    minWidth: 52,
-    alignItems: 'center',
-  },
-  countOptionText: {
-    fontSize: 16,
-    fontFamily: 'Poppins-SemiBold',
-  },
-  sheetDone: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  sheetDoneText: {
-    fontSize: 16,
-    fontFamily: 'Poppins-SemiBold',
-  },
-  manualHint: {
-    fontSize: 13,
-    fontFamily: 'Poppins-Regular',
-    marginBottom: 12,
-  },
-  manualInput: {
-    borderWidth: 1.5,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 18,
-    fontFamily: 'Poppins-SemiBold',
-    marginBottom: 16,
-  },
-  manualButton: {
-    marginTop: 4,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontFamily: 'Poppins-SemiBold',
-    marginBottom: 6,
-    marginTop: 8,
-  },
-  textArea: {
-    borderWidth: 1.5,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    fontFamily: 'Poppins-Regular',
-    minHeight: 72,
-    textAlignVertical: 'top',
   },
 });
 

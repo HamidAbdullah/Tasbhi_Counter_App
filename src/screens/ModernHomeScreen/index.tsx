@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,10 @@ import {
   SafeAreaView,
   Alert,
   TextInput,
-  Modal,
   Dimensions,
   Animated,
 } from 'react-native';
+import BottomSheet, { type BottomSheetMethods } from '@devvie/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
@@ -61,9 +61,9 @@ const ModernHomeScreen: React.FC = () => {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const [customZikrs, setCustomZikrs] = useState<ZikrItem[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingZikr, setEditingZikr] = useState<ZikrItem | null>(null);
+  const addSheetRef = useRef<BottomSheetMethods>(null);
+  const editSheetRef = useRef<BottomSheetMethods>(null);
   const [loading, setLoading] = useState(true);
   const [recentZikrs, setRecentZikrs] = useState<ZikrItem[]>([]);
   const [fabAnimation] = useState(new Animated.Value(1));
@@ -136,7 +136,7 @@ const ModernHomeScreen: React.FC = () => {
         reference: '',
         recommendedCount: 33,
       });
-      setModalVisible(false);
+      addSheetRef.current?.close();
     } catch (error) {
       Alert.alert('Error', 'Failed to save custom dhikr');
     }
@@ -151,7 +151,7 @@ const ModernHomeScreen: React.FC = () => {
       reference: zikr.reference,
       recommendedCount: zikr.recommendedCount,
     });
-    setEditModalVisible(true);
+    editSheetRef.current?.open();
   };
 
   const updateCustomZikr = async () => {
@@ -178,7 +178,7 @@ const ModernHomeScreen: React.FC = () => {
         recommendedCount: 33,
       });
       setEditingZikr(null);
-      setEditModalVisible(false);
+      editSheetRef.current?.close();
     } catch (error) {
       Alert.alert('Error', 'Failed to update custom dhikr');
     }
@@ -346,7 +346,7 @@ const ModernHomeScreen: React.FC = () => {
                 useNativeDriver: true,
               }),
             ]).start();
-            setModalVisible(true);
+            addSheetRef.current?.open();
           }}
           style={styles.fabButton}
           activeOpacity={0.8}
@@ -355,52 +355,47 @@ const ModernHomeScreen: React.FC = () => {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* Enhanced Modal */}
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
+      {/* Add New Dhikr Bottom Sheet */}
+      <BottomSheet
+        ref={addSheetRef}
+        height="85%"
+        style={{ backgroundColor: theme.colors.surface }}
+        backdropMaskColor={theme.colors.overlay}
+        closeOnBackdropPress
       >
-        <View
+        <Card
+          variant="elevated"
+          padding="large"
           style={[
-            styles.modalOverlay,
-            { backgroundColor: theme.colors.overlay },
+            styles.modalContent,
+            { backgroundColor: theme.colors.surface },
           ]}
         >
-          <Card
-            variant="elevated"
-            padding="large"
-            style={[
-              styles.modalContent,
-              { backgroundColor: theme.colors.surface },
-            ]}
+          <LinearGradient
+            colors={[theme.colors.primary, theme.colors.secondary]}
+            style={styles.modalHeader}
           >
-            <LinearGradient
-              colors={[theme.colors.primary, theme.colors.secondary]}
-              style={styles.modalHeader}
-            >
-              <View style={styles.modalHeaderLeft}>
-                <BookOpen
-                  size={24}
-                  color={theme.colors.surface}
-                  weight="fill"
-                />
-                <Text
-                  style={[styles.modalTitle, { color: theme.colors.surface }]}
-                >
-                  Add New Dhikr
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => setModalVisible(false)}
-                style={styles.modalCloseButton}
+            <View style={styles.modalHeaderLeft}>
+              <BookOpen
+                size={24}
+                color={theme.colors.surface}
+                weight="fill"
+              />
+              <Text
+                style={[styles.modalTitle, { color: theme.colors.surface }]}
               >
-                <X size={24} color={theme.colors.surface} weight="bold" />
-              </TouchableOpacity>
-            </LinearGradient>
+                Add New Dhikr
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => addSheetRef.current?.close()}
+              style={styles.modalCloseButton}
+            >
+              <X size={24} color={theme.colors.surface} weight="bold" />
+            </TouchableOpacity>
+          </LinearGradient>
 
-            <ScrollView style={styles.modalScrollView}>
+          <ScrollView style={styles.modalScrollView}>
               <View style={styles.inputContainer}>
                 <Text style={[styles.inputLabel, { color: theme.colors.text }]}>
                   Arabic Text *
@@ -535,55 +530,49 @@ const ModernHomeScreen: React.FC = () => {
               />
             </View>
           </Card>
-        </View>
-      </Modal>
+      </BottomSheet>
 
-      {/* Edit Modal */}
-      <Modal
-        visible={editModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setEditModalVisible(false)}
+      {/* Edit Dhikr Bottom Sheet */}
+      <BottomSheet
+        ref={editSheetRef}
+        height="85%"
+        style={{ backgroundColor: theme.colors.surface }}
+        backdropMaskColor={theme.colors.overlay}
+        closeOnBackdropPress
       >
-        <View
+        <Card
+          variant="elevated"
+          padding="large"
           style={[
-            styles.modalOverlay,
-            { backgroundColor: theme.colors.overlay },
+            styles.modalContent,
+            { backgroundColor: theme.colors.surface },
           ]}
         >
-          <Card
-            variant="elevated"
-            padding="large"
-            style={[
-              styles.modalContent,
-              { backgroundColor: theme.colors.surface },
-            ]}
+          <LinearGradient
+            colors={[theme.colors.primary, theme.colors.secondary]}
+            style={styles.modalHeader}
           >
-            <LinearGradient
-              colors={[theme.colors.primary, theme.colors.secondary]}
-              style={styles.modalHeader}
-            >
-              <View style={styles.modalHeaderLeft}>
-                <Gear
-                  size={24}
-                  color={theme.colors.surface}
-                  weight="fill"
-                />
-                <Text
-                  style={[styles.modalTitle, { color: theme.colors.surface }]}
-                >
-                  Edit Dhikr
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => setEditModalVisible(false)}
-                style={styles.modalCloseButton}
+            <View style={styles.modalHeaderLeft}>
+              <Gear
+                size={24}
+                color={theme.colors.surface}
+                weight="fill"
+              />
+              <Text
+                style={[styles.modalTitle, { color: theme.colors.surface }]}
               >
-                <X size={24} color={theme.colors.surface} weight="bold" />
-              </TouchableOpacity>
-            </LinearGradient>
+                Edit Dhikr
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => editSheetRef.current?.close()}
+              style={styles.modalCloseButton}
+            >
+              <X size={24} color={theme.colors.surface} weight="bold" />
+            </TouchableOpacity>
+          </LinearGradient>
 
-            <ScrollView style={styles.modalScrollView}>
+          <ScrollView style={styles.modalScrollView}>
               <View style={styles.inputContainer}>
                 <Text style={[styles.inputLabel, { color: theme.colors.text }]}>
                   Arabic Text *
@@ -718,8 +707,7 @@ const ModernHomeScreen: React.FC = () => {
               />
             </View>
           </Card>
-        </View>
-      </Modal>
+      </BottomSheet>
     </ScreenWrapper>
   );
 };
@@ -878,7 +866,7 @@ const styles = StyleSheet.create({
     height: 100,
   },
 
-  // Modal Styles
+  // Bottom sheet form styles
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
